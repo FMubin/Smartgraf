@@ -1,0 +1,818 @@
+{
+  "1": [
+    {
+      "label": "No",
+      "field": "no",
+      "width": "50px"
+    },
+    {
+      "label": "Kecamatan",
+      "field": "nama_proper",
+      "bold": true,
+      "width": "140px"
+    },
+    {
+      "label": "Lintang",
+      "field": "lintang",
+      "parent": "bab1"
+    },
+    {
+      "label": "Bujur Dari",
+      "field": "bujur_dari",
+      "parent": "bab1"
+    },
+    {
+      "label": "Luas Wilayah Km2",
+      "field": "luas_wilayah_km2",
+      "parent": "bab1"
+    },
+    {
+      "label": "Persen Luas Kabupaten",
+      "field": "persen_luas_kabupaten",
+      "parent": "bab1",
+      "percent": true
+    },
+    {
+      "label": "Letak Wilayah",
+      "field": "letak_wilayah",
+      "parent": "bab1"
+    },
+    {
+      "label": "Batas Utara",
+      "field": "batas_utara",
+      "parent": "bab1"
+    },
+    {
+      "label": "Batas Selatan",
+      "field": "batas_selatan",
+      "parent": "bab1"
+    },
+    {
+      "label": "Batas Barat",
+      "field": "batas_barat",
+      "parent": "bab1"
+    },
+    {
+      "label": "Batas Timur",
+      "field": "batas_timur",
+      "parent": "bab1"
+    },
+    {
+      "label": "Ketinggian",
+      "field": "ketinggian",
+      "parent": "bab1"
+    },
+    {
+      "label": "Jumlah Desa",
+      "field": "jumlah_desa",
+      "parent": "bab1"
+    },
+    {
+      "label": "Kategori Kecamatan",
+      "field": "kategori_kecamatan",
+      "parent": "bab1"
+    },
+    {
+      "label": "Desa Terluas",
+      "field": "Desa_terluas",
+      "parent": "bab1"
+    },
+    {
+      "label": "Luas Desa Terluas",
+      "field": "Luas_desa_terluas",
+      "parent": "bab1"
+    },
+    {
+      "label": "Persentase Desa Terluas",
+      "field": "Persentase_desa_terluas",
+      "parent": "bab1",
+      "percent": true
+    },
+    {
+      "label": "Desa Terkecil",
+      "field": "Desa_terkecil",
+      "parent": "bab1"
+    },
+    {
+      "label": "Luas Desa Terkecil",
+      "field": "Luas_desa_terkecil",
+      "parent": "bab1"
+    },
+    {
+      "label": "Persentase Desa Terkecil",
+      "field": "Persentase_desa_terkecil",
+      "parent": "bab1",
+      "percent": true
+    },
+    {
+      "label": "Jenis Topografi",
+      "field": "Jenis_Topografi",
+      "parent": "bab1"
+    },
+    {
+      "label": "Karakteristik Daerah",
+      "field": "Karakteristik_daerah",
+      "parent": "bab1"
+    },
+    {
+      "label": "Desa Tertinggi",
+      "field": "Desa_tertinggi",
+      "parent": "bab1"
+    },
+    {
+      "label": "Ketinggian",
+      "field": "Ketinggian",
+      "parent": "bab1"
+    },
+    {
+      "label": "Rata Rata Jarak Ke Kecamatan",
+      "field": "Rata-rata_jarak_ke_kecamatan",
+      "parent": "bab1"
+    },
+    {
+      "label": "Desa Terjauh Kac",
+      "field": "Desa_terjauh_kac",
+      "parent": "bab1"
+    },
+    {
+      "label": "Jarak Terjauh Kec",
+      "field": "jarak_terjauh_kec",
+      "parent": "bab1"
+    },
+    {
+      "label": "Desa Terdekat Kec",
+      "field": "Desa_terdekat_kec",
+      "parent": "bab1"
+    },
+    {
+      "label": "Jarak Terdekat Kec",
+      "field": "jarak_terdekat_kec",
+      "parent": "bab1"
+    },
+    {
+      "label": "Rata Rata Jarak Ke Kabupaten",
+      "field": "Rata-rata_jarak_ke_kabupaten",
+      "parent": "bab1"
+    },
+    {
+      "label": "Desa Terjauh Kab",
+      "field": "Desa_terjauh_kab",
+      "parent": "bab1"
+    },
+    {
+      "label": "Jarak Terjauh Kab",
+      "field": "jarak_terjauh_kab",
+      "parent": "bab1"
+    },
+    {
+      "label": "Desa Terdekat Kab",
+      "field": "desa_terdekat_kab",
+      "parent": "bab1"
+    },
+    {
+      "label": "Jarak Terdekat Kab",
+      "field": "jarak_terdekat_kab",
+      "parent": "bab1"
+    }
+  ],
+  "2": [
+    {
+      "label": "No",
+      "field": "no",
+      "width": "50px"
+    },
+    {
+      "label": "Kecamatan",
+      "field": "nama_proper",
+      "bold": true,
+      "width": "140px"
+    },
+    {
+      "label": "Jumlah Rw",
+      "field": "jumlah_rw",
+      "parent": "bab2"
+    },
+    {
+      "label": "Desa Rw Terbanyak",
+      "field": "desa_rw_terbanyak",
+      "parent": "bab2"
+    },
+    {
+      "label": "Jumlah Rw Terbanyak",
+      "field": "jumlah_rw_terbanyak",
+      "parent": "bab2"
+    },
+    {
+      "label": "Desa Rw Tersedikit",
+      "field": "desa_rw_tersedikit",
+      "parent": "bab2"
+    },
+    {
+      "label": "Jumlah Rw Tersedikit",
+      "field": "jumlah_rw_tersedikit",
+      "parent": "bab2"
+    },
+    {
+      "label": "Jumlah Rt",
+      "field": "jumlah_rt",
+      "parent": "bab2"
+    },
+    {
+      "label": "Desa Rt Terbanyak",
+      "field": "desa_rt_terbanyak",
+      "parent": "bab2"
+    },
+    {
+      "label": "Jumlah Rt Terbanyak",
+      "field": "jumlah_rt_terbanyak",
+      "parent": "bab2"
+    },
+    {
+      "label": "Desa Rt Tersedikit",
+      "field": "desa_rt_tersedikit",
+      "parent": "bab2"
+    },
+    {
+      "label": "Jumlah Rt Tersedikit",
+      "field": "jumlah_rt_tersedikit",
+      "parent": "bab2"
+    },
+    {
+      "label": "Jumlah Pns",
+      "field": "jumlah_pns",
+      "parent": "bab2"
+    },
+    {
+      "label": "Pns Laki",
+      "field": "pns_laki",
+      "parent": "bab2"
+    },
+    {
+      "label": "Pns Perempuan",
+      "field": "pns_perempuan",
+      "parent": "bab2"
+    },
+    {
+      "label": "Pendidikan Sd",
+      "field": "pendidikan_sd",
+      "parent": "bab2"
+    },
+    {
+      "label": "Pendidikan Smp",
+      "field": "pendidikan_smp",
+      "parent": "bab2"
+    },
+    {
+      "label": "Pendidikan Sma",
+      "field": "pendidikan_sma",
+      "parent": "bab2"
+    },
+    {
+      "label": "Pendidikan D2",
+      "field": "pendidikan_d2",
+      "parent": "bab2"
+    },
+    {
+      "label": "Pendidikan D3",
+      "field": "pendidikan_d3",
+      "parent": "bab2"
+    },
+    {
+      "label": "Pendidikan D4",
+      "field": "pendidikan_d4",
+      "parent": "bab2"
+    },
+    {
+      "label": "Pendidikan Sarjana",
+      "field": "pendidikan_sarjana",
+      "parent": "bab2"
+    },
+    {
+      "label": "Pendidikan Magister",
+      "field": "pendidikan_magister",
+      "parent": "bab2"
+    },
+    {
+      "label": "Gol I Persen",
+      "field": "gol_i_persen",
+      "parent": "bab2",
+      "percent": true
+    },
+    {
+      "label": "Golongan Ii Persen",
+      "field": "golongan_ii_persen",
+      "parent": "bab2",
+      "percent": true
+    },
+    {
+      "label": "Golongan Iii Persen",
+      "field": "golongan_iii_persen",
+      "parent": "bab2",
+      "percent": true
+    },
+    {
+      "label": "Golongan Iv Persen",
+      "field": "golongan_iv_persen",
+      "parent": "bab2",
+      "percent": true
+    }
+  ],
+  "3": [
+    {
+      "label": "No",
+      "field": "no",
+      "width": "50px"
+    },
+    {
+      "label": "Kecamatan",
+      "field": "nama_proper",
+      "bold": true,
+      "width": "140px"
+    },
+    {
+      "label": "Jumlah Penduduk",
+      "field": "jumlah_penduduk",
+      "parent": "bab3"
+    },
+    {
+      "label": "Kepadatan Penduduk",
+      "field": "kepadatan_penduduk",
+      "parent": "bab3"
+    },
+    {
+      "label": "Rasio Jenis Kelamin",
+      "field": "rasio_jenis_kelamin",
+      "parent": "bab3"
+    },
+    {
+      "label": "Desa Penduduk Terbesar",
+      "field": "desa_penduduk_terbesar",
+      "parent": "bab3"
+    },
+    {
+      "label": "Jumlah Penduduk Terbesar",
+      "field": "jumlah_penduduk_terbesar",
+      "parent": "bab3"
+    },
+    {
+      "label": "Persen Penduduk Terbesar",
+      "field": "persen_penduduk_terbesar",
+      "parent": "bab3",
+      "percent": true
+    },
+    {
+      "label": "Desa Terpadat",
+      "field": "desa_terpadat",
+      "parent": "bab3"
+    },
+    {
+      "label": "Kepadatan Desa Terpadat",
+      "field": "kepadatan_desa_terpadat",
+      "parent": "bab3"
+    },
+    {
+      "label": "Desa Rasiojk Tertinggi",
+      "field": "desa_rasiojk_tertinggi",
+      "parent": "bab3"
+    },
+    {
+      "label": "Rasiojk Tertinggi",
+      "field": "rasiojk_tertinggi",
+      "parent": "bab3"
+    },
+    {
+      "label": "Desa Rasiojk Terendah",
+      "field": "desa_rasiojk_terendah",
+      "parent": "bab3"
+    },
+    {
+      "label": "Rasiojk Terendah",
+      "field": "rasiojk_terendah",
+      "parent": "bab3"
+    },
+    {
+      "label": "Kelompok Umur Tertinggi",
+      "field": "kelompok_umur_tertinggi",
+      "parent": "bab3"
+    },
+    {
+      "label": "Persen Umur Tertinggi",
+      "field": "persen_umur_tertinggi",
+      "parent": "bab3",
+      "percent": true
+    },
+    {
+      "label": "Kelompok Umur Terendah",
+      "field": "kelompok_umur_terendah",
+      "parent": "bab3"
+    },
+    {
+      "label": "Persen Umur Terendah",
+      "field": "persen_umur_terendah",
+      "parent": "bab3",
+      "percent": true
+    },
+    {
+      "label": "Kelompok Umur Rasiojk Tertinggi",
+      "field": "kelompok_umur_rasiojk_tertinggi",
+      "parent": "bab3"
+    },
+    {
+      "label": "Rasiojk Umur Tertinggi",
+      "field": "rasiojk_umur_tertinggi",
+      "parent": "bab3"
+    },
+    {
+      "label": "Kelompok Umur Rasiojk Terendah",
+      "field": "kelompok_umur_rasiojk_terendah",
+      "parent": "bab3"
+    },
+    {
+      "label": "Rasiojk Umur Terendah",
+      "field": "rasiojk_umur_terendah",
+      "parent": "bab3"
+    },
+    {
+      "label": "Rasio Ketergantungan",
+      "field": "rasio_ketergantungan",
+      "parent": "bab3"
+    }
+  ],
+  "4": [
+    {
+      "label": "No",
+      "field": "no",
+      "width": "50px"
+    },
+    {
+      "label": "Kecamatan",
+      "field": "nama_proper",
+      "bold": true,
+      "width": "140px"
+    },
+    {
+      "label": "Jenjang Terbanyak",
+      "field": "Jenjang_terbanyak",
+      "parent": "bab4"
+    },
+    {
+      "label": "Jumlah Unit Terbanyak",
+      "field": "Jumlah_unit_terbanyak",
+      "parent": "bab4"
+    },
+    {
+      "label": "Jumlah Negeri",
+      "field": "Jumlah_negeri",
+      "parent": "bab4"
+    },
+    {
+      "label": "Jumlah Swasta",
+      "field": "Jumlah_swasta",
+      "parent": "bab4"
+    },
+    {
+      "label": "Jumlah Tk Ra",
+      "field": "Jumlah_TK_RA",
+      "parent": "bab4"
+    },
+    {
+      "label": "Jumlah Smp",
+      "field": "Jumlah_SMP",
+      "parent": "bab4"
+    },
+    {
+      "label": "Jumlah Mts",
+      "field": "Jumlah_MTs",
+      "parent": "bab4"
+    },
+    {
+      "label": "Jumlah Sma",
+      "field": "Jumlah_SMA",
+      "parent": "bab4"
+    },
+    {
+      "label": "Jumlah Smk",
+      "field": "Jumlah_SMK",
+      "parent": "bab4"
+    },
+    {
+      "label": "Jumlah Ma",
+      "field": "Jumlah_MA",
+      "parent": "bab4"
+    },
+    {
+      "label": "Jenjang Tidak Tersedia",
+      "field": "Jenjang_Tidak_tersedia",
+      "parent": "bab4"
+    },
+    {
+      "label": "Jenjang Jumlah Tenaga Pendidik Terbanyak",
+      "field": "Jenjang_jumlah_tenaga_pendidik_terbanyak",
+      "parent": "bab4"
+    },
+    {
+      "label": "Total Jumlah Tenaga Pendidik Terbanyak",
+      "field": "Total_jumlah_tenaga_pendidik_terbanyak",
+      "parent": "bab4"
+    },
+    {
+      "label": "Guru Sd Mi Negeri",
+      "field": "Guru_sd_mi_negeri",
+      "parent": "bab4"
+    },
+    {
+      "label": "Guru Sd Mi Swasta",
+      "field": "Guru_sd_mi_swasta",
+      "parent": "bab4"
+    },
+    {
+      "label": "Guru Tk Ra",
+      "field": "Guru_TK_RA",
+      "parent": "bab4"
+    },
+    {
+      "label": "Guru Smp",
+      "field": "Guru_SMP",
+      "parent": "bab4"
+    },
+    {
+      "label": "Guru Mts",
+      "field": "Guru_MTs",
+      "parent": "bab4"
+    },
+    {
+      "label": "Guru Sma",
+      "field": "Guru_SMA",
+      "parent": "bab4"
+    },
+    {
+      "label": "Guru Smk",
+      "field": "Guru_SMK",
+      "parent": "bab4"
+    },
+    {
+      "label": "Guru Ma",
+      "field": "Guru_MA",
+      "parent": "bab4"
+    },
+    {
+      "label": "Rasio Murid Guru Terendah",
+      "field": "Rasio_murid_guru_terendah",
+      "parent": "bab4"
+    },
+    {
+      "label": "Rasio Murid Guru Tertinggi",
+      "field": "Rasio_murid_guru_tertinggi",
+      "parent": "bab4"
+    },
+    {
+      "label": "Jenjang Rasio Tertinggi1",
+      "field": "Jenjang_rasio_tertinggi1",
+      "parent": "bab4"
+    },
+    {
+      "label": "Rasio Tertinggi1",
+      "field": "rasio_tertinggi1",
+      "parent": "bab4"
+    },
+    {
+      "label": "Jenjang Rasio Tertinggi2",
+      "field": "Jenjang_rasio_tertinggi2",
+      "parent": "bab4"
+    },
+    {
+      "label": "Rasio Tertinggi 2",
+      "field": "rasio tertinggi_2",
+      "parent": "bab4"
+    },
+    {
+      "label": "Jenjang Rasio Terendah",
+      "field": "Jenjang_rasio_terendah",
+      "parent": "bab4"
+    },
+    {
+      "label": "Rasio Terendah",
+      "field": "rasio_terendah",
+      "parent": "bab4"
+    },
+    {
+      "label": "Sarana Kesehatan Tersedia",
+      "field": "sarana_kesehatan_tersedia",
+      "parent": "bab4"
+    },
+    {
+      "label": "Sarana Kesehatan Tidak Tersedia",
+      "field": "sarana_kesehatan_tidak_tersedia",
+      "parent": "bab4"
+    },
+    {
+      "label": "Status Terbanyak1",
+      "field": "status_terbanyak1",
+      "parent": "bab4"
+    },
+    {
+      "label": "Total Status Terbanyak1",
+      "field": "total_status_terbanyak1",
+      "parent": "bab4"
+    },
+    {
+      "label": "Status Terbanyak2",
+      "field": "status_terbanyak2",
+      "parent": "bab4"
+    },
+    {
+      "label": "Total Status Terbanyak2",
+      "field": "total_status_terbanyak2",
+      "parent": "bab4"
+    },
+    {
+      "label": "Status Tersedikit",
+      "field": "status_tersedikit",
+      "parent": "bab4"
+    },
+    {
+      "label": "Total Status Tersedikit",
+      "field": "total_status_tersedikit",
+      "parent": "bab4"
+    }
+  ],
+  "5": [
+    {
+      "label": "No",
+      "field": "no",
+      "width": "50px"
+    },
+    {
+      "label": "Kecamatan",
+      "field": "nama_proper",
+      "bold": true,
+      "width": "140px"
+    },
+    {
+      "label": "Jumlah Jenis Sayuran",
+      "field": "jumlah_jenis_sayuran",
+      "parent": "bab5"
+    },
+    {
+      "label": "Daftar Sayuran",
+      "field": "daftar_sayuran",
+      "parent": "bab5"
+    },
+    {
+      "label": "Tahun A",
+      "field": "tahun_a",
+      "parent": "bab5"
+    },
+    {
+      "label": "Tanaman Luas Panen Terbesar A",
+      "field": "tanaman_luas_panen_terbesar_a",
+      "parent": "bab5"
+    },
+    {
+      "label": "Luas Panen Terbesar A",
+      "field": "luas_panen_terbesar_a",
+      "parent": "bab5"
+    },
+    {
+      "label": "Tanaman Produksi Terbesar A",
+      "field": "tanaman_produksi_terbesar_a",
+      "parent": "bab5"
+    },
+    {
+      "label": "Produksi Terbesar A",
+      "field": "produksi_terbesar_a",
+      "parent": "bab5"
+    },
+    {
+      "label": "Tahun B",
+      "field": "tahun_b",
+      "parent": "bab5"
+    },
+    {
+      "label": "Tanaman Luas Panen Terbesar B",
+      "field": "tanaman_luas_panen_terbesar_b",
+      "parent": "bab5"
+    },
+    {
+      "label": "Luas Panen Terbesar B",
+      "field": "luas_panen_terbesar_b",
+      "parent": "bab5"
+    },
+    {
+      "label": "Tanaman Produksi Terbesar B",
+      "field": "tanaman_produksi_terbesar_b",
+      "parent": "bab5"
+    },
+    {
+      "label": "Produksi Terbesar B",
+      "field": "produksi_terbesar_b",
+      "parent": "bab5"
+    },
+    {
+      "label": "Jumlah Jenis Biofarma",
+      "field": "jumlah_jenis_biofarma",
+      "parent": "bab5"
+    },
+    {
+      "label": "Daftar Biofarma",
+      "field": "daftar_biofarma",
+      "parent": "bab5"
+    },
+    {
+      "label": "Jumlah Jenis Buah Tahunan",
+      "field": "jumlah_jenis_buah_tahunan",
+      "parent": "bab5"
+    },
+    {
+      "label": "Daftar Buah Tahunan",
+      "field": "daftar_buah_tahunan",
+      "parent": "bab5"
+    },
+    {
+      "label": "Buah Utama 2025",
+      "field": "buah_utama_2025",
+      "parent": "bab5"
+    },
+    {
+      "label": "Volume Buah 2025",
+      "field": "volume_buah_2025",
+      "parent": "bab5"
+    },
+    {
+      "label": "Buah Utama 2024",
+      "field": "buah_utama_2024",
+      "parent": "bab5"
+    },
+    {
+      "label": "Volume Buah 2024",
+      "field": "volume_buah_2024",
+      "parent": "bab5"
+    }
+  ],
+  "6": [
+    {
+      "label": "No",
+      "field": "no",
+      "width": "50px"
+    },
+    {
+      "label": "Kecamatan",
+      "field": "nama_proper",
+      "bold": true,
+      "width": "140px"
+    },
+    {
+      "label": "Jenis Sarana Akomodasi Yang Tersedia",
+      "field": "jenis_sarana_akomodasi_yang_tersedia",
+      "parent": "bab6"
+    },
+    {
+      "label": "Keberadaan Fasilitas Pos Ekspedisi",
+      "field": "keberadaan_fasilitas_pos_ekspedisi",
+      "parent": "bab6"
+    }
+  ],
+  "7": [
+    {
+      "label": "No",
+      "field": "no",
+      "width": "50px"
+    },
+    {
+      "label": "Kecamatan",
+      "field": "nama_proper",
+      "bold": true,
+      "width": "140px"
+    },
+    {
+      "label": "Sudah Belum Ada Bank",
+      "field": "sudah_belum_ada_bank",
+      "parent": "bab7"
+    },
+    {
+      "label": "Keberadaan Bank",
+      "field": "keberadaan_bank",
+      "parent": "bab7"
+    },
+    {
+      "label": "Jumlah Koperasi",
+      "field": "jumlah_koperasi",
+      "parent": "bab7"
+    },
+    {
+      "label": "Jenis Koperasi",
+      "field": "jenis_koperasi",
+      "parent": "bab7"
+    },
+    {
+      "label": "Jenis Sarana Perdagangan",
+      "field": "jenis_sarana_perdagangan",
+      "parent": "bab7"
+    },
+    {
+      "label": "Daftar Sarana Perdagangan",
+      "field": "daftar_sarana_perdagangan",
+      "parent": "bab7"
+    }
+  ]
+}
