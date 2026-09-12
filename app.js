@@ -136,8 +136,9 @@ function renderCustomChartSVG(chartCfg, districtData, babNum, width = 340, heigh
     const foundMetric = VILLAGE_METRICS_BY_BAB[babNum] && VILLAGE_METRICS_BY_BAB[babNum].find(m => m.key === metricKey);
     if (foundMetric) metricDisplayName = foundMetric.label;
 
-    districtData.villages.forEach(v => {
-      let rawVal = v[metricKey];
+    districtData.villages.forEach((v, vIdx) => {
+      const vName = typeof v === "object" ? (v.nama || v.name || v.label || `Desa ${vIdx + 1}`) : String(v || `Desa ${vIdx + 1}`);
+      let rawVal = typeof v === "object" ? v[metricKey] : 0;
       let numVal = 0;
       if (typeof rawVal === "number") {
         numVal = rawVal;
@@ -146,8 +147,8 @@ function renderCustomChartSVG(chartCfg, districtData, babNum, width = 340, heigh
         numVal = parseFloat(clean) || 0;
       }
       items.push({
-        key: v.nama,
-        label: v.nama,
+        key: vName,
+        label: vName,
         value: numVal,
         rawVal: rawVal
       });
@@ -175,13 +176,17 @@ function renderCustomChartSVG(chartCfg, districtData, babNum, width = 340, heigh
         const clean = rawVal.replace(/[^0-9.,-]/g, "").replace(",", ".");
         numVal = parseFloat(clean) || 0;
       }
-      let displayLabel = rawLabels[idx] || k.replace(/_/g, " ");
-      items.push({ key: k, label: displayLabel, value: numVal, rawVal: rawVal });
+      let displayLabel = String(rawLabels[idx] || k || `Variabel ${idx + 1}`).replace(/_/g, " ");
+      items.push({ key: k || `var_${idx}`, label: displayLabel, value: numVal, rawVal: rawVal });
     });
   }
 
   if (items.length === 0) {
-    return `<div style="color: #94a3b8; font-size: 12px; text-align: center; padding: 20px;">Pilih minimal 1 indikator desa untuk merender grafik.</div>`;
+    return `
+      <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 ${width} ${height}" style="overflow: visible; font-family: 'Outfit', sans-serif;">
+        <text x="${width / 2}" y="${height / 2}" text-anchor="middle" font-size="11" fill="#94a3b8">Data grafik per desa belum tersedia</text>
+      </svg>
+    `;
   }
 
   const paletteKey = chartCfg.color || "emerald";
@@ -192,7 +197,7 @@ function renderCustomChartSVG(chartCfg, districtData, babNum, width = 340, heigh
 
   // 1. VERTICAL BAR CHART (Pure SVG)
   if (type === "bar") {
-    const maxVal = Math.max(...items.map(it => it.value), 1) * 1.25;
+    const maxVal = Math.max(...items.map(it => Number(it && it.value) || 0), 1) * 1.25;
     const paddingLeft = 18;
     const paddingRight = 18;
     const paddingTop = 28;
@@ -204,14 +209,16 @@ function renderCustomChartSVG(chartCfg, districtData, babNum, width = 340, heigh
 
     let barsSVG = "";
     items.forEach((it, i) => {
+      const itVal = Number(it && it.value) || 0;
       const x = paddingLeft + (i * step) + (step - barWidth) / 2;
-      const barH = Math.max(3, (it.value / maxVal) * chartH);
+      const barH = Math.max(3, (itVal / maxVal) * chartH);
       const y = paddingTop + (chartH - barH);
       const color = colors[i % colors.length];
 
       const valFontSize = items.length > 9 ? "8" : "9";
       const lblFontSize = items.length > 9 ? "8" : "8.5";
-      const labelText = it.label.length > 10 ? it.label.substring(0, 9) + '..' : it.label;
+      const rawLabel = String((it && (it.label || it.name || it.desa || it.nama)) || `Desa ${i + 1}`);
+      const labelText = rawLabel.length > 10 ? rawLabel.substring(0, 9) + '..' : rawLabel;
 
       let labelTag = "";
       if (items.length > 5) {
@@ -221,7 +228,7 @@ function renderCustomChartSVG(chartCfg, districtData, babNum, width = 340, heigh
       }
 
       barsSVG += `
-        <g class="chart-bar-group" data-val="${it.value}">
+        <g class="chart-bar-group" data-val="${itVal}">
           <defs>
             <linearGradient id="bar_grad_${chartId}_${i}" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stop-color="${color}"/>
@@ -229,7 +236,7 @@ function renderCustomChartSVG(chartCfg, districtData, babNum, width = 340, heigh
             </linearGradient>
           </defs>
           <rect x="${x}" y="${y}" width="${barWidth}" height="${barH}" rx="4" fill="url(#bar_grad_${chartId}_${i})" filter="drop-shadow(0 2px 4px rgba(0,0,0,0.06))"/>
-          <text x="${x + barWidth / 2}" y="${Math.max(paddingTop - 4, y - 4)}" text-anchor="middle" font-size="${valFontSize}" font-weight="800" fill="#0f172a">${formatNumberID(it.value)}</text>
+          <text x="${x + barWidth / 2}" y="${Math.max(paddingTop - 4, y - 4)}" text-anchor="middle" font-size="${valFontSize}" font-weight="800" fill="#0f172a">${formatNumberID(itVal)}</text>
           ${labelTag}
         </g>
       `;
@@ -247,7 +254,7 @@ function renderCustomChartSVG(chartCfg, districtData, babNum, width = 340, heigh
 
   // 2. HORIZONTAL BAR CHART (Pure SVG)
   if (type === "hbar") {
-    const maxVal = Math.max(...items.map(it => it.value), 1) * 1.18;
+    const maxVal = Math.max(...items.map(it => Number(it && it.value) || 0), 1) * 1.18;
     const paddingLeft = 74;
     const paddingRight = 45;
     const paddingTop = 26;
@@ -259,17 +266,19 @@ function renderCustomChartSVG(chartCfg, districtData, babNum, width = 340, heigh
 
     let rowsSVG = "";
     items.forEach((it, i) => {
+      const itVal = Number(it && it.value) || 0;
       const y = paddingTop + (i * rowH) + (rowH - barH) / 2;
-      const barW = Math.max(3, (it.value / maxVal) * chartW);
+      const barW = Math.max(3, (itVal / maxVal) * chartW);
       const color = colors[i % colors.length];
-      const labelText = it.label.length > 10 ? it.label.substring(0, 9) + '..' : it.label;
+      const rawLabel = String((it && (it.label || it.name || it.desa || it.nama)) || `Desa ${i + 1}`);
+      const labelText = rawLabel.length > 10 ? rawLabel.substring(0, 9) + '..' : rawLabel;
 
       rowsSVG += `
         <g class="chart-hbar-row">
           <text x="${paddingLeft - 7}" y="${y + barH / 2 + 3.5}" text-anchor="end" font-size="8.5" font-weight="700" fill="#334155">${labelText}</text>
           <rect x="${paddingLeft}" y="${y}" width="${chartW}" height="${barH}" rx="3" fill="#f1f5f9"/>
           <rect x="${paddingLeft}" y="${y}" width="${barW}" height="${barH}" rx="3" fill="${color}" filter="drop-shadow(0 1px 3px rgba(0,0,0,0.08))"/>
-          <text x="${paddingLeft + barW + 5}" y="${y + barH / 2 + 3.5}" text-anchor="start" font-size="8.5" font-weight="800" fill="#0f172a">${formatNumberID(it.value)}</text>
+          <text x="${paddingLeft + barW + 5}" y="${y + barH / 2 + 3.5}" text-anchor="start" font-size="8.5" font-weight="800" fill="#0f172a">${formatNumberID(itVal)}</text>
         </g>
       `;
     });
@@ -286,7 +295,7 @@ function renderCustomChartSVG(chartCfg, districtData, babNum, width = 340, heigh
 
   // 3. DONUT / PIE CHART (100% Pure SVG with SVG Legend for perfect image conversion)
   if (type === "donut") {
-    const total = items.reduce((acc, it) => acc + it.value, 0) || 1;
+    const total = items.reduce((acc, it) => acc + (Number(it && it.value) || 0), 0) || 1;
     const cx = Math.min(85, width * 0.28);
     const cy = (height - 20) / 2 + 18;
     const outerR = Math.min(cx - 10, cy - 14) * 0.88;
@@ -296,7 +305,7 @@ function renderCustomChartSVG(chartCfg, districtData, babNum, width = 340, heigh
     let pathsSVG = "";
 
     items.forEach((it, i) => {
-      const sliceVal = it.value || 0;
+      const sliceVal = Number(it && it.value) || 0;
       const sliceAngle = (sliceVal / total) * 2 * Math.PI;
       const nextAngle = currentAngle + sliceAngle;
       const color = colors[i % colors.length];
@@ -333,16 +342,18 @@ function renderCustomChartSVG(chartCfg, districtData, babNum, width = 340, heigh
     let legendItemsSVG = "";
 
     items.slice(0, 6).forEach((it, i) => {
+      const itVal = Number(it && it.value) || 0;
       const y = startY + (i * legendRowH);
       const color = colors[i % colors.length];
-      const pct = ((it.value / total) * 100).toFixed(1);
-      const shortName = it.label.length > 12 ? it.label.substring(0, 11) + '..' : it.label;
+      const pct = ((itVal / total) * 100).toFixed(1);
+      const rawLabel = String((it && (it.label || it.name || it.desa || it.nama)) || `Desa ${i + 1}`);
+      const shortName = rawLabel.length > 12 ? rawLabel.substring(0, 11) + '..' : rawLabel;
 
       legendItemsSVG += `
         <g>
           <rect x="${legendX}" y="${y - 7}" width="9" height="9" rx="2.5" fill="${color}"/>
           <text x="${legendX + 14}" y="${y}" font-size="8.5" font-weight="700" fill="#334155">${shortName}</text>
-          <text x="${width - 15}" y="${y}" text-anchor="end" font-size="8.5" font-weight="800" fill="#0f172a">${formatNumberID(it.value)} (${pct}%)</text>
+          <text x="${width - 15}" y="${y}" text-anchor="end" font-size="8.5" font-weight="800" fill="#0f172a">${formatNumberID(itVal)} (${pct}%)</text>
         </g>
       `;
     });
@@ -359,7 +370,7 @@ function renderCustomChartSVG(chartCfg, districtData, babNum, width = 340, heigh
 
   // 4. LINE & AREA TREND CHART (Pure SVG)
   if (type === "line") {
-    const maxVal = Math.max(...items.map(it => it.value), 1) * 1.25;
+    const maxVal = Math.max(...items.map(it => Number(it && it.value) || 0), 1) * 1.25;
     const paddingLeft = 20;
     const paddingRight = 20;
     const paddingTop = 28;
@@ -367,11 +378,14 @@ function renderCustomChartSVG(chartCfg, districtData, babNum, width = 340, heigh
     const chartW = width - paddingLeft - paddingRight;
     const chartH = height - paddingTop - paddingBottom;
     const step = chartW / Math.max(1, items.length - 1);
+    const valFontSize = items.length > 9 ? "8" : "9";
+    const lblFontSize = items.length > 9 ? "8" : "8.5";
 
     const points = items.map((it, i) => {
+      const itVal = Number(it && it.value) || 0;
       const x = paddingLeft + (i * step);
-      const y = paddingTop + (chartH - (it.value / maxVal) * chartH);
-      return { x, y, it };
+      const y = paddingTop + (chartH - (itVal / maxVal) * chartH);
+      return { x, y, it, val: itVal };
     });
 
     let pathD = `M ${points[0].x} ${points[0].y}`;
@@ -384,7 +398,8 @@ function renderCustomChartSVG(chartCfg, districtData, babNum, width = 340, heigh
 
     let nodesSVG = "";
     points.forEach((pt, i) => {
-      const labelText = pt.it.label.length > 9 ? pt.it.label.substring(0, 8) + '..' : pt.it.label;
+      const rawLabel = String((pt && pt.it && (pt.it.label || pt.it.name || pt.it.desa || pt.it.nama)) || `Titik ${i + 1}`);
+      const labelText = rawLabel.length > 9 ? rawLabel.substring(0, 8) + '..' : rawLabel;
       let labelTag = "";
       if (items.length > 5) {
         labelTag = `<text x="${pt.x}" y="${paddingTop + chartH + 12}" text-anchor="end" font-size="${lblFontSize}" font-weight="700" fill="#64748b" transform="rotate(-35, ${pt.x}, ${paddingTop + chartH + 12})">${labelText}</text>`;
@@ -394,7 +409,7 @@ function renderCustomChartSVG(chartCfg, districtData, babNum, width = 340, heigh
 
       nodesSVG += `
         <circle cx="${pt.x}" cy="${pt.y}" r="3.5" fill="#ffffff" stroke="${color}" stroke-width="2.5"/>
-        <text x="${pt.x}" y="${Math.max(paddingTop - 4, pt.y - 6)}" text-anchor="middle" font-size="8.5" font-weight="800" fill="#0f172a">${formatNumberID(pt.it.value)}</text>
+        <text x="${pt.x}" y="${Math.max(paddingTop - 4, pt.y - 6)}" text-anchor="middle" font-size="8.5" font-weight="800" fill="#0f172a">${formatNumberID(pt.val)}</text>
         ${labelTag}
       `;
     });
@@ -423,7 +438,7 @@ function renderCustomChartSVG(chartCfg, districtData, babNum, width = 340, heigh
     const cy = (height - 20) * 0.50 + 16;
     const maxR = Math.min(cx, cy - 16) * 0.72;
     const numAxes = items.length;
-    const maxVal = Math.max(...items.map(it => it.value), 1) * 1.15;
+    const maxVal = Math.max(...items.map(it => Number(it && it.value) || 0), 1) * 1.15;
 
     let webSVG = "";
     [0.33, 0.66, 1.0].forEach(level => {
@@ -444,6 +459,7 @@ function renderCustomChartSVG(chartCfg, districtData, babNum, width = 340, heigh
     const color = colors[0];
 
     items.forEach((it, i) => {
+      const itVal = Number(it && it.value) || 0;
       const angle = (i / numAxes) * 2 * Math.PI - Math.PI / 2;
       const spokeX = cx + maxR * Math.cos(angle);
       const spokeY = cy + maxR * Math.sin(angle);
@@ -452,17 +468,18 @@ function renderCustomChartSVG(chartCfg, districtData, babNum, width = 340, heigh
       const labelX = cx + (maxR + 13) * Math.cos(angle);
       const labelY = cy + (maxR + 10) * Math.sin(angle);
       const align = Math.abs(Math.cos(angle)) < 0.2 ? "middle" : (Math.cos(angle) > 0 ? "start" : "end");
-      const shortName = it.label.length > 8 ? it.label.substring(0, 7) + '..' : it.label;
+      const rawLabel = String((it && (it.label || it.name || it.desa || it.nama)) || `Desa ${i + 1}`);
+      const shortName = rawLabel.length > 8 ? rawLabel.substring(0, 7) + '..' : rawLabel;
 
       spokesSVG += `<text x="${labelX}" y="${labelY}" text-anchor="${align}" font-size="8" font-weight="700" fill="#475569">${shortName}</text>`;
 
-      const rVal = (it.value / maxVal) * maxR;
+      const rVal = (itVal / maxVal) * maxR;
       const dataX = cx + rVal * Math.cos(angle);
       const dataY = cy + rVal * Math.sin(angle);
       dataPoly += `${dataX},${dataY} `;
       nodesSVG += `
         <circle cx="${dataX}" cy="${dataY}" r="3" fill="#ffffff" stroke="${color}" stroke-width="2"/>
-        <text x="${dataX}" y="${dataY - 4}" text-anchor="middle" font-size="7.5" font-weight="800" fill="#0f172a">${formatNumberID(it.value)}</text>
+        <text x="${dataX}" y="${dataY - 4}" text-anchor="middle" font-size="7.5" font-weight="800" fill="#0f172a">${formatNumberID(itVal)}</text>
       `;
     });
 
@@ -479,7 +496,7 @@ function renderCustomChartSVG(chartCfg, districtData, babNum, width = 340, heigh
   }
 
   // 6. LOLLIPOP CHART (Pure SVG)
-  const maxVal = Math.max(...items.map(it => it.value), 1) * 1.25;
+  const maxVal = Math.max(...items.map(it => Number(it && it.value) || 0), 1) * 1.25;
   const paddingLeft = 18;
   const paddingRight = 18;
   const paddingTop = 28;
@@ -490,10 +507,12 @@ function renderCustomChartSVG(chartCfg, districtData, babNum, width = 340, heigh
 
   let lollipopsSVG = "";
   items.forEach((it, i) => {
+    const itVal = Number(it && it.value) || 0;
     const cx = paddingLeft + (i * step) + step / 2;
-    const cy = paddingTop + (chartH - (it.value / maxVal) * chartH);
+    const cy = paddingTop + (chartH - (itVal / maxVal) * chartH);
     const color = colors[i % colors.length];
-    const labelText = it.label.length > 10 ? it.label.substring(0, 9) + '..' : it.label;
+    const rawLabel = String((it && (it.label || it.name || it.desa || it.nama)) || `Desa ${i + 1}`);
+    const labelText = rawLabel.length > 10 ? rawLabel.substring(0, 9) + '..' : rawLabel;
 
     let labelTag = "";
     if (items.length > 5) {
@@ -506,7 +525,7 @@ function renderCustomChartSVG(chartCfg, districtData, babNum, width = 340, heigh
       <g>
         <line x1="${cx}" y1="${paddingTop + chartH}" x2="${cx}" y2="${cy}" stroke="${color}" stroke-width="2.5"/>
         <circle cx="${cx}" cy="${cy}" r="6" fill="${color}" stroke="#ffffff" stroke-width="1.8"/>
-        <text x="${cx}" y="${Math.max(paddingTop - 4, cy - 8)}" text-anchor="middle" font-size="8.5" font-weight="800" fill="#0f172a">${formatNumberID(it.value)}</text>
+        <text x="${cx}" y="${Math.max(paddingTop - 4, cy - 8)}" text-anchor="middle" font-size="8.5" font-weight="800" fill="#0f172a">${formatNumberID(itVal)}</text>
         ${labelTag}
       </g>
     `;
@@ -634,11 +653,15 @@ function renderChartStudioBab(babNum) {
 
     villages.forEach((v, vIdx) => {
       const rowBg = vIdx % 2 === 0 ? "#ffffff" : "#f8fafc";
+      const vName = typeof v === "object" ? (v.nama || v.name || `Desa ${vIdx + 1}`) : String(v || `Desa ${vIdx + 1}`);
       tableHtml += `
         <tr style="background: ${rowBg}; border-bottom: 1px solid #f1f5f9;">
           <td style="padding: 5px 8px; font-weight: 700; color: #64748b;">${vIdx + 1}</td>
-          <td style="padding: 5px 8px; font-weight: 700; color: #0f172a;">${v.nama}</td>
-          ${metrics.map(m => `<td style="padding: 5px 8px; text-align: right; color: #334155; font-weight: 600;">${formatNumberID(v[m.key])}</td>`).join('')}
+          <td style="padding: 5px 8px; font-weight: 700; color: #0f172a;">${vName}</td>
+          ${metrics.map(m => {
+            const vVal = typeof v === "object" ? v[m.key] : 0;
+            return `<td style="padding: 5px 8px; text-align: right; color: #334155; font-weight: 600;">${formatNumberID(vVal)}</td>`;
+          }).join('')}
         </tr>
       `;
     });
@@ -3738,9 +3761,13 @@ function renderInterpretasiKCDA() {
   const badgeKec = document.getElementById("interpretasi-kec-badge");
   if (badgeKec) badgeKec.innerText = `Kec ${activeIndex + 1}/35`;
 
-  // Collect checked aspects
-  const checkedAspectEls = document.querySelectorAll(".interpretasi-aspect-cb:checked");
-  const selectedAspects = Array.from(checkedAspectEls).map(cb => cb.value);
+  // Collect checked aspects & recommendations toggle
+  const cbRekomendasi = document.getElementById("interpretasi-cb-rekomendasi");
+  const includeRecommendations = cbRekomendasi ? cbRekomendasi.checked : true;
+  const selectedAspects = ["geografi", "pemerintahan", "penduduk", "sosial", "pertanian", "ekonomi", "keuangan"];
+  if (includeRecommendations) {
+    selectedAspects.push("rekomendasi");
+  }
 
   // Update Source Badge
   const sourceBadge = document.getElementById("interpretasi-source-badge");
@@ -3819,8 +3846,12 @@ function renderInterpretasiKCDA() {
   }
 
   // 5. Render Recommendations
+  const recsBox = document.getElementById("interpretasi-recs-box");
   const recsContainer = document.getElementById("interpretasi-recommendations-list");
-  if (recsContainer) {
+  if (recsBox) {
+    recsBox.style.display = includeRecommendations ? "block" : "none";
+  }
+  if (recsContainer && includeRecommendations) {
     recsContainer.innerHTML = data.recommendations.map(r => `
       <div style="display: flex; align-items: flex-start; gap: 10px; background: #ffffff; padding: 10px 14px; border-radius: 8px; border: 1px solid #dbeafe;">
         <span style="font-size: 16px; flex-shrink: 0; margin-top: 2px;">${r.icon}</span>
@@ -4360,6 +4391,1074 @@ function populateDistrictSelectors() {
   renderDistrictList();
 }
 
+
+// --- TABULAR SPREADSHEET EXPLORER DEFINITIONS & RENDERING ---
+const TABULAR_COLUMNS_DEF = {
+  "1": [
+    {
+      "label": "No",
+      "field": "no",
+      "width": "50px"
+    },
+    {
+      "label": "Kecamatan",
+      "field": "nama_proper",
+      "bold": true,
+      "width": "140px"
+    },
+    {
+      "label": "Lintang",
+      "field": "lintang",
+      "parent": "bab1"
+    },
+    {
+      "label": "Bujur Dari",
+      "field": "bujur_dari",
+      "parent": "bab1"
+    },
+    {
+      "label": "Luas Wilayah Km2",
+      "field": "luas_wilayah_km2",
+      "parent": "bab1"
+    },
+    {
+      "label": "Persen Luas Kabupaten",
+      "field": "persen_luas_kabupaten",
+      "parent": "bab1",
+      "percent": true
+    },
+    {
+      "label": "Letak Wilayah",
+      "field": "letak_wilayah",
+      "parent": "bab1"
+    },
+    {
+      "label": "Batas Utara",
+      "field": "batas_utara",
+      "parent": "bab1"
+    },
+    {
+      "label": "Batas Selatan",
+      "field": "batas_selatan",
+      "parent": "bab1"
+    },
+    {
+      "label": "Batas Barat",
+      "field": "batas_barat",
+      "parent": "bab1"
+    },
+    {
+      "label": "Batas Timur",
+      "field": "batas_timur",
+      "parent": "bab1"
+    },
+    {
+      "label": "Ketinggian",
+      "field": "ketinggian",
+      "parent": "bab1"
+    },
+    {
+      "label": "Jumlah Desa",
+      "field": "jumlah_desa",
+      "parent": "bab1"
+    },
+    {
+      "label": "Kategori Kecamatan",
+      "field": "kategori_kecamatan",
+      "parent": "bab1"
+    },
+    {
+      "label": "Desa Terluas",
+      "field": "Desa_terluas",
+      "parent": "bab1"
+    },
+    {
+      "label": "Luas Desa Terluas",
+      "field": "Luas_desa_terluas",
+      "parent": "bab1"
+    },
+    {
+      "label": "Persentase Desa Terluas",
+      "field": "Persentase_desa_terluas",
+      "parent": "bab1",
+      "percent": true
+    },
+    {
+      "label": "Desa Terkecil",
+      "field": "Desa_terkecil",
+      "parent": "bab1"
+    },
+    {
+      "label": "Luas Desa Terkecil",
+      "field": "Luas_desa_terkecil",
+      "parent": "bab1"
+    },
+    {
+      "label": "Persentase Desa Terkecil",
+      "field": "Persentase_desa_terkecil",
+      "parent": "bab1",
+      "percent": true
+    },
+    {
+      "label": "Jenis Topografi",
+      "field": "Jenis_Topografi",
+      "parent": "bab1"
+    },
+    {
+      "label": "Karakteristik Daerah",
+      "field": "Karakteristik_daerah",
+      "parent": "bab1"
+    },
+    {
+      "label": "Desa Tertinggi",
+      "field": "Desa_tertinggi",
+      "parent": "bab1"
+    },
+    {
+      "label": "Ketinggian",
+      "field": "Ketinggian",
+      "parent": "bab1"
+    },
+    {
+      "label": "Rata Rata Jarak Ke Kecamatan",
+      "field": "Rata-rata_jarak_ke_kecamatan",
+      "parent": "bab1"
+    },
+    {
+      "label": "Desa Terjauh Kac",
+      "field": "Desa_terjauh_kac",
+      "parent": "bab1"
+    },
+    {
+      "label": "Jarak Terjauh Kec",
+      "field": "jarak_terjauh_kec",
+      "parent": "bab1"
+    },
+    {
+      "label": "Desa Terdekat Kec",
+      "field": "Desa_terdekat_kec",
+      "parent": "bab1"
+    },
+    {
+      "label": "Jarak Terdekat Kec",
+      "field": "jarak_terdekat_kec",
+      "parent": "bab1"
+    },
+    {
+      "label": "Rata Rata Jarak Ke Kabupaten",
+      "field": "Rata-rata_jarak_ke_kabupaten",
+      "parent": "bab1"
+    },
+    {
+      "label": "Desa Terjauh Kab",
+      "field": "Desa_terjauh_kab",
+      "parent": "bab1"
+    },
+    {
+      "label": "Jarak Terjauh Kab",
+      "field": "jarak_terjauh_kab",
+      "parent": "bab1"
+    },
+    {
+      "label": "Desa Terdekat Kab",
+      "field": "desa_terdekat_kab",
+      "parent": "bab1"
+    },
+    {
+      "label": "Jarak Terdekat Kab",
+      "field": "jarak_terdekat_kab",
+      "parent": "bab1"
+    }
+  ],
+  "2": [
+    {
+      "label": "No",
+      "field": "no",
+      "width": "50px"
+    },
+    {
+      "label": "Kecamatan",
+      "field": "nama_proper",
+      "bold": true,
+      "width": "140px"
+    },
+    {
+      "label": "Jumlah Rw",
+      "field": "jumlah_rw",
+      "parent": "bab2"
+    },
+    {
+      "label": "Desa Rw Terbanyak",
+      "field": "desa_rw_terbanyak",
+      "parent": "bab2"
+    },
+    {
+      "label": "Jumlah Rw Terbanyak",
+      "field": "jumlah_rw_terbanyak",
+      "parent": "bab2"
+    },
+    {
+      "label": "Desa Rw Tersedikit",
+      "field": "desa_rw_tersedikit",
+      "parent": "bab2"
+    },
+    {
+      "label": "Jumlah Rw Tersedikit",
+      "field": "jumlah_rw_tersedikit",
+      "parent": "bab2"
+    },
+    {
+      "label": "Jumlah Rt",
+      "field": "jumlah_rt",
+      "parent": "bab2"
+    },
+    {
+      "label": "Desa Rt Terbanyak",
+      "field": "desa_rt_terbanyak",
+      "parent": "bab2"
+    },
+    {
+      "label": "Jumlah Rt Terbanyak",
+      "field": "jumlah_rt_terbanyak",
+      "parent": "bab2"
+    },
+    {
+      "label": "Desa Rt Tersedikit",
+      "field": "desa_rt_tersedikit",
+      "parent": "bab2"
+    },
+    {
+      "label": "Jumlah Rt Tersedikit",
+      "field": "jumlah_rt_tersedikit",
+      "parent": "bab2"
+    },
+    {
+      "label": "Jumlah Pns",
+      "field": "jumlah_pns",
+      "parent": "bab2"
+    },
+    {
+      "label": "Pns Laki",
+      "field": "pns_laki",
+      "parent": "bab2"
+    },
+    {
+      "label": "Pns Perempuan",
+      "field": "pns_perempuan",
+      "parent": "bab2"
+    },
+    {
+      "label": "Pendidikan Sd",
+      "field": "pendidikan_sd",
+      "parent": "bab2"
+    },
+    {
+      "label": "Pendidikan Smp",
+      "field": "pendidikan_smp",
+      "parent": "bab2"
+    },
+    {
+      "label": "Pendidikan Sma",
+      "field": "pendidikan_sma",
+      "parent": "bab2"
+    },
+    {
+      "label": "Pendidikan D2",
+      "field": "pendidikan_d2",
+      "parent": "bab2"
+    },
+    {
+      "label": "Pendidikan D3",
+      "field": "pendidikan_d3",
+      "parent": "bab2"
+    },
+    {
+      "label": "Pendidikan D4",
+      "field": "pendidikan_d4",
+      "parent": "bab2"
+    },
+    {
+      "label": "Pendidikan Sarjana",
+      "field": "pendidikan_sarjana",
+      "parent": "bab2"
+    },
+    {
+      "label": "Pendidikan Magister",
+      "field": "pendidikan_magister",
+      "parent": "bab2"
+    },
+    {
+      "label": "Gol I Persen",
+      "field": "gol_i_persen",
+      "parent": "bab2",
+      "percent": true
+    },
+    {
+      "label": "Golongan Ii Persen",
+      "field": "golongan_ii_persen",
+      "parent": "bab2",
+      "percent": true
+    },
+    {
+      "label": "Golongan Iii Persen",
+      "field": "golongan_iii_persen",
+      "parent": "bab2",
+      "percent": true
+    },
+    {
+      "label": "Golongan Iv Persen",
+      "field": "golongan_iv_persen",
+      "parent": "bab2",
+      "percent": true
+    }
+  ],
+  "3": [
+    {
+      "label": "No",
+      "field": "no",
+      "width": "50px"
+    },
+    {
+      "label": "Kecamatan",
+      "field": "nama_proper",
+      "bold": true,
+      "width": "140px"
+    },
+    {
+      "label": "Jumlah Penduduk",
+      "field": "jumlah_penduduk",
+      "parent": "bab3"
+    },
+    {
+      "label": "Kepadatan Penduduk",
+      "field": "kepadatan_penduduk",
+      "parent": "bab3"
+    },
+    {
+      "label": "Rasio Jenis Kelamin",
+      "field": "rasio_jenis_kelamin",
+      "parent": "bab3"
+    },
+    {
+      "label": "Desa Penduduk Terbesar",
+      "field": "desa_penduduk_terbesar",
+      "parent": "bab3"
+    },
+    {
+      "label": "Jumlah Penduduk Terbesar",
+      "field": "jumlah_penduduk_terbesar",
+      "parent": "bab3"
+    },
+    {
+      "label": "Persen Penduduk Terbesar",
+      "field": "persen_penduduk_terbesar",
+      "parent": "bab3",
+      "percent": true
+    },
+    {
+      "label": "Desa Terpadat",
+      "field": "desa_terpadat",
+      "parent": "bab3"
+    },
+    {
+      "label": "Kepadatan Desa Terpadat",
+      "field": "kepadatan_desa_terpadat",
+      "parent": "bab3"
+    },
+    {
+      "label": "Desa Rasiojk Tertinggi",
+      "field": "desa_rasiojk_tertinggi",
+      "parent": "bab3"
+    },
+    {
+      "label": "Rasiojk Tertinggi",
+      "field": "rasiojk_tertinggi",
+      "parent": "bab3"
+    },
+    {
+      "label": "Desa Rasiojk Terendah",
+      "field": "desa_rasiojk_terendah",
+      "parent": "bab3"
+    },
+    {
+      "label": "Rasiojk Terendah",
+      "field": "rasiojk_terendah",
+      "parent": "bab3"
+    },
+    {
+      "label": "Kelompok Umur Tertinggi",
+      "field": "kelompok_umur_tertinggi",
+      "parent": "bab3"
+    },
+    {
+      "label": "Persen Umur Tertinggi",
+      "field": "persen_umur_tertinggi",
+      "parent": "bab3",
+      "percent": true
+    },
+    {
+      "label": "Kelompok Umur Terendah",
+      "field": "kelompok_umur_terendah",
+      "parent": "bab3"
+    },
+    {
+      "label": "Persen Umur Terendah",
+      "field": "persen_umur_terendah",
+      "parent": "bab3",
+      "percent": true
+    },
+    {
+      "label": "Kelompok Umur Rasiojk Tertinggi",
+      "field": "kelompok_umur_rasiojk_tertinggi",
+      "parent": "bab3"
+    },
+    {
+      "label": "Rasiojk Umur Tertinggi",
+      "field": "rasiojk_umur_tertinggi",
+      "parent": "bab3"
+    },
+    {
+      "label": "Kelompok Umur Rasiojk Terendah",
+      "field": "kelompok_umur_rasiojk_terendah",
+      "parent": "bab3"
+    },
+    {
+      "label": "Rasiojk Umur Terendah",
+      "field": "rasiojk_umur_terendah",
+      "parent": "bab3"
+    },
+    {
+      "label": "Rasio Ketergantungan",
+      "field": "rasio_ketergantungan",
+      "parent": "bab3"
+    }
+  ],
+  "4": [
+    {
+      "label": "No",
+      "field": "no",
+      "width": "50px"
+    },
+    {
+      "label": "Kecamatan",
+      "field": "nama_proper",
+      "bold": true,
+      "width": "140px"
+    },
+    {
+      "label": "Jenjang Terbanyak",
+      "field": "Jenjang_terbanyak",
+      "parent": "bab4"
+    },
+    {
+      "label": "Jumlah Unit Terbanyak",
+      "field": "Jumlah_unit_terbanyak",
+      "parent": "bab4"
+    },
+    {
+      "label": "Jumlah Negeri",
+      "field": "Jumlah_negeri",
+      "parent": "bab4"
+    },
+    {
+      "label": "Jumlah Swasta",
+      "field": "Jumlah_swasta",
+      "parent": "bab4"
+    },
+    {
+      "label": "Jumlah Tk Ra",
+      "field": "Jumlah_TK_RA",
+      "parent": "bab4"
+    },
+    {
+      "label": "Jumlah Smp",
+      "field": "Jumlah_SMP",
+      "parent": "bab4"
+    },
+    {
+      "label": "Jumlah Mts",
+      "field": "Jumlah_MTs",
+      "parent": "bab4"
+    },
+    {
+      "label": "Jumlah Sma",
+      "field": "Jumlah_SMA",
+      "parent": "bab4"
+    },
+    {
+      "label": "Jumlah Smk",
+      "field": "Jumlah_SMK",
+      "parent": "bab4"
+    },
+    {
+      "label": "Jumlah Ma",
+      "field": "Jumlah_MA",
+      "parent": "bab4"
+    },
+    {
+      "label": "Jenjang Tidak Tersedia",
+      "field": "Jenjang_Tidak_tersedia",
+      "parent": "bab4"
+    },
+    {
+      "label": "Jenjang Jumlah Tenaga Pendidik Terbanyak",
+      "field": "Jenjang_jumlah_tenaga_pendidik_terbanyak",
+      "parent": "bab4"
+    },
+    {
+      "label": "Total Jumlah Tenaga Pendidik Terbanyak",
+      "field": "Total_jumlah_tenaga_pendidik_terbanyak",
+      "parent": "bab4"
+    },
+    {
+      "label": "Guru Sd Mi Negeri",
+      "field": "Guru_sd_mi_negeri",
+      "parent": "bab4"
+    },
+    {
+      "label": "Guru Sd Mi Swasta",
+      "field": "Guru_sd_mi_swasta",
+      "parent": "bab4"
+    },
+    {
+      "label": "Guru Tk Ra",
+      "field": "Guru_TK_RA",
+      "parent": "bab4"
+    },
+    {
+      "label": "Guru Smp",
+      "field": "Guru_SMP",
+      "parent": "bab4"
+    },
+    {
+      "label": "Guru Mts",
+      "field": "Guru_MTs",
+      "parent": "bab4"
+    },
+    {
+      "label": "Guru Sma",
+      "field": "Guru_SMA",
+      "parent": "bab4"
+    },
+    {
+      "label": "Guru Smk",
+      "field": "Guru_SMK",
+      "parent": "bab4"
+    },
+    {
+      "label": "Guru Ma",
+      "field": "Guru_MA",
+      "parent": "bab4"
+    },
+    {
+      "label": "Rasio Murid Guru Terendah",
+      "field": "Rasio_murid_guru_terendah",
+      "parent": "bab4"
+    },
+    {
+      "label": "Rasio Murid Guru Tertinggi",
+      "field": "Rasio_murid_guru_tertinggi",
+      "parent": "bab4"
+    },
+    {
+      "label": "Jenjang Rasio Tertinggi1",
+      "field": "Jenjang_rasio_tertinggi1",
+      "parent": "bab4"
+    },
+    {
+      "label": "Rasio Tertinggi1",
+      "field": "rasio_tertinggi1",
+      "parent": "bab4"
+    },
+    {
+      "label": "Jenjang Rasio Tertinggi2",
+      "field": "Jenjang_rasio_tertinggi2",
+      "parent": "bab4"
+    },
+    {
+      "label": "Rasio Tertinggi 2",
+      "field": "rasio tertinggi_2",
+      "parent": "bab4"
+    },
+    {
+      "label": "Jenjang Rasio Terendah",
+      "field": "Jenjang_rasio_terendah",
+      "parent": "bab4"
+    },
+    {
+      "label": "Rasio Terendah",
+      "field": "rasio_terendah",
+      "parent": "bab4"
+    },
+    {
+      "label": "Sarana Kesehatan Tersedia",
+      "field": "sarana_kesehatan_tersedia",
+      "parent": "bab4"
+    },
+    {
+      "label": "Sarana Kesehatan Tidak Tersedia",
+      "field": "sarana_kesehatan_tidak_tersedia",
+      "parent": "bab4"
+    },
+    {
+      "label": "Status Terbanyak1",
+      "field": "status_terbanyak1",
+      "parent": "bab4"
+    },
+    {
+      "label": "Total Status Terbanyak1",
+      "field": "total_status_terbanyak1",
+      "parent": "bab4"
+    },
+    {
+      "label": "Status Terbanyak2",
+      "field": "status_terbanyak2",
+      "parent": "bab4"
+    },
+    {
+      "label": "Total Status Terbanyak2",
+      "field": "total_status_terbanyak2",
+      "parent": "bab4"
+    },
+    {
+      "label": "Status Tersedikit",
+      "field": "status_tersedikit",
+      "parent": "bab4"
+    },
+    {
+      "label": "Total Status Tersedikit",
+      "field": "total_status_tersedikit",
+      "parent": "bab4"
+    }
+  ],
+  "5": [
+    {
+      "label": "No",
+      "field": "no",
+      "width": "50px"
+    },
+    {
+      "label": "Kecamatan",
+      "field": "nama_proper",
+      "bold": true,
+      "width": "140px"
+    },
+    {
+      "label": "Jumlah Jenis Sayuran",
+      "field": "jumlah_jenis_sayuran",
+      "parent": "bab5"
+    },
+    {
+      "label": "Daftar Sayuran",
+      "field": "daftar_sayuran",
+      "parent": "bab5"
+    },
+    {
+      "label": "Tahun A",
+      "field": "tahun_a",
+      "parent": "bab5"
+    },
+    {
+      "label": "Tanaman Luas Panen Terbesar A",
+      "field": "tanaman_luas_panen_terbesar_a",
+      "parent": "bab5"
+    },
+    {
+      "label": "Luas Panen Terbesar A",
+      "field": "luas_panen_terbesar_a",
+      "parent": "bab5"
+    },
+    {
+      "label": "Tanaman Produksi Terbesar A",
+      "field": "tanaman_produksi_terbesar_a",
+      "parent": "bab5"
+    },
+    {
+      "label": "Produksi Terbesar A",
+      "field": "produksi_terbesar_a",
+      "parent": "bab5"
+    },
+    {
+      "label": "Tahun B",
+      "field": "tahun_b",
+      "parent": "bab5"
+    },
+    {
+      "label": "Tanaman Luas Panen Terbesar B",
+      "field": "tanaman_luas_panen_terbesar_b",
+      "parent": "bab5"
+    },
+    {
+      "label": "Luas Panen Terbesar B",
+      "field": "luas_panen_terbesar_b",
+      "parent": "bab5"
+    },
+    {
+      "label": "Tanaman Produksi Terbesar B",
+      "field": "tanaman_produksi_terbesar_b",
+      "parent": "bab5"
+    },
+    {
+      "label": "Produksi Terbesar B",
+      "field": "produksi_terbesar_b",
+      "parent": "bab5"
+    },
+    {
+      "label": "Jumlah Jenis Biofarma",
+      "field": "jumlah_jenis_biofarma",
+      "parent": "bab5"
+    },
+    {
+      "label": "Daftar Biofarma",
+      "field": "daftar_biofarma",
+      "parent": "bab5"
+    },
+    {
+      "label": "Jumlah Jenis Buah Tahunan",
+      "field": "jumlah_jenis_buah_tahunan",
+      "parent": "bab5"
+    },
+    {
+      "label": "Daftar Buah Tahunan",
+      "field": "daftar_buah_tahunan",
+      "parent": "bab5"
+    },
+    {
+      "label": "Buah Utama 2025",
+      "field": "buah_utama_2025",
+      "parent": "bab5"
+    },
+    {
+      "label": "Volume Buah 2025",
+      "field": "volume_buah_2025",
+      "parent": "bab5"
+    },
+    {
+      "label": "Buah Utama 2024",
+      "field": "buah_utama_2024",
+      "parent": "bab5"
+    },
+    {
+      "label": "Volume Buah 2024",
+      "field": "volume_buah_2024",
+      "parent": "bab5"
+    }
+  ],
+  "6": [
+    {
+      "label": "No",
+      "field": "no",
+      "width": "50px"
+    },
+    {
+      "label": "Kecamatan",
+      "field": "nama_proper",
+      "bold": true,
+      "width": "140px"
+    },
+    {
+      "label": "Jenis Sarana Akomodasi Yang Tersedia",
+      "field": "jenis_sarana_akomodasi_yang_tersedia",
+      "parent": "bab6"
+    },
+    {
+      "label": "Keberadaan Fasilitas Pos Ekspedisi",
+      "field": "keberadaan_fasilitas_pos_ekspedisi",
+      "parent": "bab6"
+    }
+  ],
+  "7": [
+    {
+      "label": "No",
+      "field": "no",
+      "width": "50px"
+    },
+    {
+      "label": "Kecamatan",
+      "field": "nama_proper",
+      "bold": true,
+      "width": "140px"
+    },
+    {
+      "label": "Sudah Belum Ada Bank",
+      "field": "sudah_belum_ada_bank",
+      "parent": "bab7"
+    },
+    {
+      "label": "Keberadaan Bank",
+      "field": "keberadaan_bank",
+      "parent": "bab7"
+    },
+    {
+      "label": "Jumlah Koperasi",
+      "field": "jumlah_koperasi",
+      "parent": "bab7"
+    },
+    {
+      "label": "Jenis Koperasi",
+      "field": "jenis_koperasi",
+      "parent": "bab7"
+    },
+    {
+      "label": "Jenis Sarana Perdagangan",
+      "field": "jenis_sarana_perdagangan",
+      "parent": "bab7"
+    },
+    {
+      "label": "Daftar Sarana Perdagangan",
+      "field": "daftar_sarana_perdagangan",
+      "parent": "bab7"
+    }
+  ]
+};
+
+let activeTabularBab = 1;
+
+function renderTabularData(babNum = 1) {
+  activeTabularBab = babNum;
+  
+  // 1. Update Bab Tabs active button
+  const babButtons = document.querySelectorAll("#data-tab-bab-tabs .bab-tab");
+  babButtons.forEach(btn => {
+    const b = parseInt(btn.getAttribute("data-bab"));
+    if (b === babNum) {
+      btn.classList.add("active");
+      btn.style.backgroundColor = "#2563eb";
+      btn.style.borderColor = "#2563eb";
+      btn.style.color = "#ffffff";
+      btn.style.fontWeight = "700";
+    } else {
+      btn.classList.remove("active");
+      btn.style.backgroundColor = "#f8fafc";
+      btn.style.borderColor = "#cbd5e1";
+      btn.style.color = "#475569";
+      btn.style.fontWeight = "600";
+    }
+  });
+
+  // 2. Update Header Title & Description
+  const titleEl = document.getElementById("tabular-preview-title");
+  const babNames = {
+    1: "Bab 1 (Geografi dan Iklim)",
+    2: "Bab 2 (Pemerintahan)",
+    3: "Bab 3 (Penduduk)",
+    4: "Bab 4 (Sosial dan Kesejahteraan Rakyat)",
+    5: "Bab 5 (Pertanian)",
+    6: "Bab 6 (Pariwisata, Transportasi, dan Komunikasi)",
+    7: "Bab 7 (Perbankan, Koperasi, dan Perdagangan)"
+  };
+  if (titleEl) {
+    titleEl.innerText = `Data Lembar Kerja: ${babNames[babNum] || `Bab ${babNum}`}`;
+  }
+
+  // 3. Render Table Thead
+  const thead = document.getElementById("tabular-preview-thead");
+  const tbody = document.getElementById("tabular-preview-tbody");
+  if (!thead || !tbody) return;
+
+  const cols = (typeof TABULAR_COLUMNS_DEF !== "undefined" && (TABULAR_COLUMNS_DEF[babNum] || TABULAR_COLUMNS_DEF[String(babNum)])) 
+    ? (TABULAR_COLUMNS_DEF[babNum] || TABULAR_COLUMNS_DEF[String(babNum)])
+    : [
+        { label: "No", field: "no", width: "50px" },
+        { label: "Kecamatan", field: "nama_proper", bold: true, width: "140px" }
+      ];
+
+  thead.innerHTML = "";
+  cols.forEach(col => {
+    const th = document.createElement("th");
+    th.style.cssText = `
+      padding: 10px 14px;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #1e293b;
+      text-align: left;
+      white-space: nowrap;
+      border-bottom: 2px solid #cbd5e1;
+      border-right: 1px solid #e2e8f0;
+      background: #f8fafc;
+      ${col.width ? `min-width: ${col.width}; max-width: ${col.width};` : "min-width: 140px;"}
+    `;
+    th.innerText = col.label;
+    thead.appendChild(th);
+  });
+
+  // 4. Render Table Tbody with districtsData
+  tbody.innerHTML = "";
+  if (!districtsData || districtsData.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="${cols.length}" style="text-align: center; padding: 24px; color: #64748b;">Tidak ada data kecamatan yang dimuat.</td></tr>`;
+    return;
+  }
+
+  districtsData.forEach((district, dIdx) => {
+    const tr = document.createElement("tr");
+    const isActive = dIdx === activeIndex;
+    tr.style.cssText = `
+      cursor: pointer;
+      transition: background 0.15s;
+      border-bottom: 1px solid #f1f5f9;
+      background-color: ${isActive ? "#dbeafe" : (dIdx % 2 === 0 ? "#ffffff" : "#f8fafc")};
+    `;
+
+    tr.onmouseover = () => {
+      if (dIdx !== activeIndex) tr.style.backgroundColor = "#f1f5f9";
+    };
+    tr.onmouseout = () => {
+      if (dIdx !== activeIndex) tr.style.backgroundColor = (dIdx % 2 === 0 ? "#ffffff" : "#f8fafc");
+    };
+
+    tr.onclick = () => {
+      setActiveDistrict(dIdx, true);
+    };
+
+    cols.forEach(col => {
+      const td = document.createElement("td");
+      td.style.cssText = `
+        padding: 9px 14px;
+        font-size: 11.5px;
+        border-right: 1px solid #f1f5f9;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        ${col.bold ? "font-weight: 700; color: #0f172a;" : "color: #334155;"}
+        ${col.field === "no" ? "text-align: center; color: #64748b; font-weight: 700;" : ""}
+      `;
+
+      let val = null;
+      if (col.field === "no") {
+        val = district.no || (dIdx + 1);
+      } else if (col.field === "nama_proper" || col.field === "nama" || col.field === "kecamatan") {
+        val = district.nama_proper || district.nama || district.kecamatan || "-";
+      } else {
+        const parentKey = col.parent || `bab${activeTabularBab}`;
+        const sheetNamesByBab = {
+          1: "Bab1_Geografi", 2: "Bab2_Pemerintahan", 3: "Bab3_Kependudukan", 4: "Bab4_Sosial",
+          5: "Bab5_Pertanian", 6: "Bab6_Ekonomi", 7: "Bab7_Keuangan"
+        };
+        const sheetName = sheetNamesByBab[activeTabularBab] || `Bab${activeTabularBab}`;
+        const rawMasterBab = (district.rawMaster && (district.rawMaster[sheetName] || district.rawMaster[`Bab${activeTabularBab}`])) || {};
+        const rawMergeBab = (district.rawMerge && (district.rawMerge[`Bab${activeTabularBab}`] || district.rawMerge[sheetName])) || {};
+        const babObj = district[parentKey] || district[`bab${activeTabularBab}`] || {};
+
+        // 1. Direct lookup in babObj
+        if (babObj[col.field] !== undefined && babObj[col.field] !== null && babObj[col.field] !== "") {
+          val = babObj[col.field];
+        }
+        // 2. Case-insensitive lookup in babObj
+        if (val === null || val === undefined) {
+          const colClean = col.field.toLowerCase().replace(/[\s_-]/g, "");
+          for (const k of Object.keys(babObj)) {
+            if (k.toLowerCase().replace(/[\s_-]/g, "") === colClean && babObj[k] !== undefined && babObj[k] !== null && babObj[k] !== "") {
+              val = babObj[k];
+              break;
+            }
+          }
+        }
+        // 3. Direct lookup in rawMasterBab
+        if (val === null || val === undefined) {
+          if (rawMasterBab[col.field] !== undefined && rawMasterBab[col.field] !== null && rawMasterBab[col.field] !== "") {
+            val = rawMasterBab[col.field];
+          } else {
+            const colClean = col.field.toLowerCase().replace(/[\s_-]/g, "");
+            for (const k of Object.keys(rawMasterBab)) {
+              if (k.toLowerCase().replace(/[\s_-]/g, "") === colClean && rawMasterBab[k] !== undefined && rawMasterBab[k] !== null && rawMasterBab[k] !== "") {
+                val = rawMasterBab[k];
+                break;
+              }
+            }
+          }
+        }
+        // 4. Direct lookup in rawMergeBab
+        if (val === null || val === undefined) {
+          if (rawMergeBab[col.field] !== undefined && rawMergeBab[col.field] !== null && rawMergeBab[col.field] !== "") {
+            val = rawMergeBab[col.field];
+          }
+        }
+        // 5. Lookup in top-level district
+        if (val === null || val === undefined) {
+          if (district[col.field] !== undefined && district[col.field] !== null && district[col.field] !== "") {
+            val = district[col.field];
+          }
+        }
+        // 6. Common key aliases fallback
+        if (val === null || val === undefined) {
+          const aliasMap = {
+            "luas_wilayah_km2": ["luas_kec", "luas_wilayah"],
+            "Desa_terluas": ["desa_luas_nama", "desa_terluas"],
+            "Luas_desa_terluas": ["desa_luas_val", "luas_desa_terluas"],
+            "Desa_terkecil": ["desa_kecil_nama", "desa_terkecil"],
+            "Luas_desa_terkecil": ["desa_kecil_val", "luas_desa_terkecil"],
+            "Desa_tertinggi": ["desa_tinggi_nama", "desa_tertinggi"],
+            "Ketinggian": ["desa_tinggi_val", "ketinggian"],
+            "Desa_terjauh_kac": ["desa_jauh_nama", "desa_terjauh_kac", "desa_terjauh_kec"],
+            "jarak_terjauh_kec": ["desa_jauh_val", "jarak_terjauh_kec"],
+            "Desa_terdekat_kec": ["desa_dekat_nama", "desa_terdekat_kec"],
+            "jarak_terdekat_kec": ["desa_dekat_val", "jarak_terdekat_kec"],
+            "Desa_terjauh_kab": ["desa_jauh_kab_nama", "desa_terjauh_kab"],
+            "jarak_terjauh_kab": ["desa_jauh_kab_val", "jarak_terjauh_kab"],
+            "desa_terdekat_kab": ["desa_dekat_kab_nama", "desa_terdekat_kab"],
+            "jarak_terdekat_kab": ["desa_dekat_kab_val", "jarak_terdekat_kab"],
+            "jumlah_desa": ["desa_jumlah", "jumlah_desa"],
+            "jumlah_pns": ["pns_total", "jumlah_pns"],
+            "jumlah_penduduk": ["pend_total", "jumlah_penduduk"],
+            "kepadatan_penduduk": ["kepadatan", "kepadatan_penduduk"],
+            "rasio_jenis_kelamin": ["sex_ratio", "rasio_jenis_kelamin"],
+            "rasio_ketergantungan": ["beban_tanggungan", "rasio_ketergantungan"],
+            "desa_penduduk_terbesar": ["desa_max_nama", "desa_penduduk_terbesar"],
+            "jumlah_penduduk_terbesar": ["desa_max_val", "jumlah_penduduk_terbesar"],
+            "desa_terpadat": ["desa_padat_nama", "desa_terpadat"],
+            "kepadatan_desa_terpadat": ["desa_padat_val", "kepadatan_desa_terpadat"],
+            "Jumlah_TK_RA": ["f_tk", "Jumlah_TK_RA"],
+            "Jumlah_unit_terbanyak": ["f_sd", "Jumlah_unit_terbanyak"],
+            "Jumlah_SMP": ["f_smp", "Jumlah_SMP"],
+            "Jumlah_SMA": ["f_sma", "Jumlah_SMA"],
+            "Guru_TK_RA": ["s_tk", "Guru_TK_RA"],
+            "Total_jumlah_tenaga_pendidik_terbanyak": ["s_sd", "Guru_sd_mi_negeri"],
+            "Guru_SMP": ["s_smp", "Guru_SMP"],
+            "Guru_SMA": ["s_sma", "Guru_SMA"],
+            "total_status_terbanyak1": ["g_stunting", "total_status_terbanyak1"],
+            "total_status_terbanyak2": ["g_kurang", "total_status_terbanyak2"],
+            "total_status_tersedikit": ["g_buruk", "total_status_tersedikit"],
+            "luas_panen_terbesar_a": ["panen_cabai_k", "luas_panen_terbesar_a"],
+            "produksi_terbesar_a": ["prod_cabai_k", "produksi_terbesar_a"],
+            "luas_panen_terbesar_b": ["panen_cabai_r", "luas_panen_terbesar_b"],
+            "produksi_terbesar_b": ["prod_cabai_r", "produksi_terbesar_b"],
+            "volume_buah_2025": ["prod_lengkeng", "volume_buah_2025"],
+            "volume_buah_2024": ["prod_duku", "volume_buah_2024"],
+            "jenis_sarana_akomodasi_yang_tersedia": ["akomodasi_teks", "jenis_sarana_akomodasi_yang_tersedia"],
+            "keberadaan_fasilitas_pos_ekspedisi": ["pos_teks", "keberadaan_fasilitas_pos_ekspedisi"],
+            "sudah_belum_ada_bank": ["bank_status", "sudah_belum_ada_bank"],
+            "keberadaan_bank": ["bank_teks", "keberadaan_bank"],
+            "jumlah_koperasi": ["total_koperasi", "jumlah_koperasi"],
+            "jenis_koperasi": ["jenis_koperasi_teks", "jenis_koperasi"],
+            "jenis_sarana_perdagangan": ["total_jenis_dagang", "jenis_sarana_perdagangan"],
+            "daftar_sarana_perdagangan": ["daftar_sarana_dagang", "daftar_sarana_perdagangan"]
+          };
+          const aliases = aliasMap[col.field] || [];
+          for (const a of aliases) {
+            if (babObj[a] !== undefined && babObj[a] !== null && babObj[a] !== "") { val = babObj[a]; break; }
+            if (rawMasterBab[a] !== undefined && rawMasterBab[a] !== null && rawMasterBab[a] !== "") { val = rawMasterBab[a]; break; }
+          }
+        }
+      }
+
+      if (typeof val === "number") {
+        val = Number.isInteger(val) ? val.toLocaleString("id-ID") : val.toLocaleString("id-ID", { minimumFractionDigits: 1, maximumFractionDigits: 2 });
+      }
+
+      td.innerText = (val !== null && val !== undefined && val !== "") ? val : "-";
+      td.title = td.innerText;
+      tr.appendChild(td);
+    });
+
+    tbody.appendChild(tr);
+  });
+
+  // 5. Render District List in Left Column if empty
+  if (typeof renderDistrictList === "function") {
+    renderDistrictList();
+  }
+}
+
 // --- DAFTAR KECAMATAN PADA TAB DATA EXCEL ---
 function renderDistrictList() {
   const listContainer = document.getElementById("district-list");
@@ -4807,10 +5906,10 @@ function renderActiveBabLayout(babNum, babData, districtName) {
                 <span class="editable-icon-wrapper" draggable="false" data-icon-key="bab1_icon_3">${getIcon("bab1_icon_3", `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f472b6" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`)}</span>
               </div>
               <div class="card-stat-value">
-                <span id="val-desa-jauh-val" data-field="desa_jauh_val" data-type="float" contenteditable="true">${formatNumber(babData.desa_jauh_val)}</span>
+                <span id="val-desa-jauh-val" data-field="desa_jauh_val" data-type="float" contenteditable="true">${formatNumber((babData.desa_jauh_val !== undefined && babData.desa_jauh_val !== null && babData.desa_jauh_val !== 0) ? babData.desa_jauh_val : (babData.jarak_terjauh_kec || babData.jarak_terjauh_kab || babData.desa_jauh_val || 0))}</span>
                 <span class="unit" contenteditable="true" data-label-key="lbl_km">${getLabel("lbl_km", "km")}</span>
               </div>
-              <div class="card-stat-subtext-village" id="val-desa-jauh-nama" data-field="desa_jauh_nama" contenteditable="true">${babData.desa_jauh_nama}</div>
+              <div class="card-stat-subtext-village" id="val-desa-jauh-nama" data-field="desa_jauh_nama" contenteditable="true">${babData.desa_jauh_nama || babData.Desa_terjauh_kac || babData.Desa_terjauh_kec || babData.Desa_terjauh_kab || babData.desa_terjauh || "-"}</div>
             </div>
             
             <div class="info-card-glass">
@@ -4822,10 +5921,10 @@ function renderActiveBabLayout(babNum, babData, districtName) {
                 <span class="editable-icon-wrapper" draggable="false" data-icon-key="bab1_icon_4">${getIcon("bab1_icon_4", `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2"><path d="M17 11l-5-5-5 5M17 18l-5-5-5 5"></path></svg>`)}</span>
               </div>
               <div class="card-stat-value">
-                <span id="val-desa-tinggi-val" data-field="desa_tinggi_val" data-type="int" contenteditable="true">${babData.desa_tinggi_val}</span>
+                <span id="val-desa-tinggi-val" data-field="desa_tinggi_val" data-type="int" contenteditable="true">${(babData.desa_tinggi_val !== undefined && babData.desa_tinggi_val !== null && babData.desa_tinggi_val !== 0) ? babData.desa_tinggi_val : (babData.Ketinggian || babData.ketinggian || babData.desa_tinggi_val || 0)}</span>
                 <span class="unit" contenteditable="true" data-label-key="lbl_m_dpl">${getLabel("lbl_m_dpl", "m dpl")}</span>
               </div>
-              <div class="card-stat-subtext-village" id="val-desa-tinggi-nama" data-field="desa_tinggi_nama" contenteditable="true">${babData.desa_tinggi_nama}</div>
+              <div class="card-stat-subtext-village" id="val-desa-tinggi-nama" data-field="desa_tinggi_nama" contenteditable="true">${babData.desa_tinggi_nama || babData.Desa_tertinggi || babData.desa_tertinggi || "-"}</div>
             </div>
           </div>
         </div>
@@ -6829,6 +7928,27 @@ function safeParseInt(val, fallback = 0) {
   return isNaN(num) ? fallback : num;
 }
 
+function safeFindValueByKeys(obj, keys) {
+  if (!obj || typeof obj !== "object") return null;
+  for (const k of keys) {
+    if (obj[k] !== undefined && obj[k] !== null && obj[k] !== "") {
+      return obj[k];
+    }
+  }
+  const objKeys = Object.keys(obj);
+  for (const k of keys) {
+    const cleanK = k.toLowerCase().replace(/[\s_-]/g, "");
+    for (const ok of objKeys) {
+      if (ok.toLowerCase().replace(/[\s_-]/g, "") === cleanK) {
+        if (obj[ok] !== undefined && obj[ok] !== null && obj[ok] !== "") {
+          return obj[ok];
+        }
+      }
+    }
+  }
+  return null;
+}
+
 // High-accuracy CSV character decoder (UTF-8, Windows-1252, ISO-8859-1 fallback)
 function decodeCsvBuffer(buffer) {
   if (!buffer) return "";
@@ -7082,29 +8202,82 @@ function processMergeCsvEntries(csvEntries, sourceBatchName) {
       en: fullEn.join("\n\n")
     };
 
-    // Extract Bab 1 village metrics from table codes
+    // Extract Bab 1 village metrics from table codes (BPS Standard Merge: T111K2=Area, T13K2=Dist Kec, T13K3=Dist Kab, T111K5=Elevation mdpl)
     const m1 = rawMerge.Bab1 || {};
     const villageAreas = [];
     const villageDists = [];
     const villageElevs = [];
 
+    // Lookup matching initial district data if available to enrich village metrics
+    const initMatch = (typeof INITIAL_DISTRICTS_DATA !== "undefined" && INITIAL_DISTRICTS_DATA.find(d => (d.nama && d.nama.toUpperCase() === kecName) || d.kode_kec == kodeKec || d.no === (i + 1))) || null;
+
     villages.forEach((vname, vi) => {
       const colArea = `T111K2B${vi + 1}`;
-      const colDist = `T112K2B${vi + 1}`;
-      const colElev = `T113K2B${vi + 1}`;
-      const valArea = safeParseNum(m1[colArea], 0);
-      const valDist = safeParseNum(m1[colDist], 0);
-      const valElev = safeParseNum(m1[colElev], 0);
+      const colDistKec = m1[`T13K2B${vi + 1}`] !== undefined ? `T13K2B${vi + 1}` : `T112K2B${vi + 1}`;
+      const colElev = m1[`T111K5B${vi + 1}`] !== undefined ? `T111K5B${vi + 1}` : `T113K2B${vi + 1}`;
+
+      const initV = (initMatch && initMatch.villages && (initMatch.villages[vi] || initMatch.villages.find(iv => iv.nama && iv.nama.toLowerCase() === vname.toLowerCase()))) || {};
+
+      const valArea = safeParseNum(m1[colArea], initV.luas_km2 || 0);
+      const valDist = safeParseNum(m1[colDistKec], initV.jarak_kec_km || 0);
+      const valElev = safeParseNum(m1[colElev], initV.elevasi_mdpl || 0);
+
       villageAreas.push({ name: vname, val: valArea });
       villageDists.push({ name: vname, val: valDist });
       villageElevs.push({ name: vname, val: valElev });
     });
 
-    const totalArea = villageAreas.reduce((acc, c) => acc + c.val, 0) || safeParseNum(m1.luas_wilayah_km2, 17.86);
-    let maxAreaV = villageAreas.length > 0 ? villageAreas.reduce((max, c) => c.val > max.val ? c : max, villageAreas[0]) : { name: "Paniis", val: 2.32 };
-    let minAreaV = villageAreas.filter(c => c.val > 0).length > 0 ? villageAreas.filter(c => c.val > 0).reduce((min, c) => c.val < min.val ? c : min, villageAreas[0]) : { name: "Karangsetra", val: 1.1 };
-    let maxDistV = villageDists.length > 0 ? villageDists.reduce((max, c) => c.val > max.val ? c : max, villageDists[0]) : { name: "Paniis", val: 3.2 };
-    let maxElevV = villageElevs.length > 0 ? villageElevs.reduce((max, c) => c.val > max.val ? c : max, villageElevs[0]) : { name: "Karangsetra", val: 203 };
+    const totalArea = villageAreas.reduce((acc, c) => acc + c.val, 0) || safeParseNum(m1.luas_wilayah_km2, (initMatch && initMatch.bab1 && initMatch.bab1.luas_kec) || 17.86);
+    let maxAreaV = villageAreas.filter(c => c.val > 0).length > 0 ? villageAreas.reduce((max, c) => c.val > max.val ? c : max, villageAreas[0]) : { name: (initMatch && initMatch.bab1 && initMatch.bab1.desa_luas_nama) || (villages[0] || "Paniis"), val: (initMatch && initMatch.bab1 && initMatch.bab1.desa_luas_val) || 2.32 };
+    let minAreaV = villageAreas.filter(c => c.val > 0).length > 0 ? villageAreas.filter(c => c.val > 0).reduce((min, c) => c.val < min.val ? c : min, villageAreas[0]) : { name: (villages[1] || "Sumberjaya"), val: 1.1 };
+    
+    let maxDistV = villageDists.filter(c => c.val > 0).length > 0 ? villageDists.reduce((max, c) => c.val > max.val ? c : max, villageDists[0]) : { name: (initMatch && initMatch.bab1 && initMatch.bab1.desa_jauh_nama) || (villages[0] || "Paniis"), val: (initMatch && initMatch.bab1 && initMatch.bab1.desa_jauh_val) || 3.2 };
+    let maxElevV = villageElevs.filter(c => c.val > 0).length > 0 ? villageElevs.reduce((max, c) => c.val > max.val ? c : max, villageElevs[0]) : { name: (initMatch && initMatch.bab1 && initMatch.bab1.desa_tinggi_nama) || (villages[0] || "Karangsetra"), val: (initMatch && initMatch.bab1 && initMatch.bab1.desa_tinggi_val) || 203 };
+
+    const villageObjects = villages.map((vname, vi) => {
+      const colArea = `T111K2B${vi + 1}`;
+      const colDistKec = m1[`T13K2B${vi + 1}`] !== undefined ? `T13K2B${vi + 1}` : `T112K2B${vi + 1}`;
+      const colDistKab = `T13K3B${vi + 1}`;
+      const colElev = m1[`T111K5B${vi + 1}`] !== undefined ? `T111K5B${vi + 1}` : `T113K2B${vi + 1}`;
+
+      const initV = (initMatch && initMatch.villages && (initMatch.villages[vi] || initMatch.villages.find(iv => iv.nama && iv.nama.toLowerCase() === vname.toLowerCase()))) || {};
+
+      const valArea = safeParseNum(m1[colArea], initV.luas_km2 || 1.5);
+      const valDist = safeParseNum(m1[colDistKec], initV.jarak_kec_km || 2.5);
+      const valDistKab = safeParseNum(m1[colDistKab], initV.jarak_kab_km || 25.0);
+      const valElev = safeParseNum(m1[colElev], initV.elevasi_mdpl || 50);
+
+      return {
+        no: vi + 1,
+        nama: vname,
+        luas_km2: valArea,
+        persen_luas: totalArea > 0 ? Math.round((valArea / totalArea) * 10000) / 100 : (initV.persen_luas || 1.0),
+        jarak_kec_km: valDist,
+        jarak_kab_km: valDistKab,
+        elevasi_mdpl: valElev,
+        jumlah_rw: initV.jumlah_rw || 6,
+        jumlah_rt: initV.jumlah_rt || 18,
+        aparatur: initV.aparatur || 10,
+        pend_laki: initV.pend_laki || 1500,
+        pend_perempuan: initV.pend_perempuan || 1450,
+        pend_total: initV.pend_total || 2950,
+        sex_ratio: initV.sex_ratio || 103.4,
+        kepadatan: initV.kepadatan || 350,
+        sd_unit: initV.sd_unit || 3,
+        smp_unit: initV.smp_unit || 1,
+        guru_sd: initV.guru_sd || 15,
+        posyandu: initV.posyandu || 4,
+        stunting_kasus: initV.stunting_kasus || 3,
+        panen_sayur_ha: initV.panen_sayur_ha || 5.0,
+        prod_sayur_kw: initV.prod_sayur_kw || 120,
+        prod_buah_kw: initV.prod_buah_kw || 450,
+        akomodasi: initV.akomodasi || 0,
+        ekspedisi: initV.ekspedisi || 0,
+        bank: initV.bank || 0,
+        koperasi: initV.koperasi || 0,
+        pasar: initV.pasar || 1
+      };
+    });
 
     // Construct Master District Data Object
     newDistricts.push({
@@ -7113,101 +8286,73 @@ function processMergeCsvEntries(csvEntries, sourceBatchName) {
       nama: kecName,
       nama_proper: kecProper,
       jumlah_desa: jumlahDesa,
-      villages: villages,
+      villages: villageObjects,
       ulasan: ulasan,
-      bab1: {
+      bab1: Object.assign({}, initMatch ? initMatch.bab1 : {}, {
         luas_kec: Math.round(totalArea * 100) / 100,
+        luas_wilayah_km2: Math.round(totalArea * 100) / 100,
         desa_luas_nama: maxAreaV.name,
+        Desa_terluas: maxAreaV.name,
         desa_luas_val: Math.round(maxAreaV.val * 100) / 100,
+        Luas_desa_terluas: Math.round(maxAreaV.val * 100) / 100,
+        desa_kecil_nama: minAreaV.name,
+        Desa_terkecil: minAreaV.name,
+        desa_kecil_val: Math.round(minAreaV.val * 100) / 100,
+        Luas_desa_terkecil: Math.round(minAreaV.val * 100) / 100,
         lereng_persen: Math.round((totalArea / 3036.0) * 10000) / 100,
-        pesisir_persen: JSON.stringify(m1).toLowerCase().includes("pesisir") ? 100 : 0,
+        persen_luas_kabupaten: Math.round((totalArea / 3036.0) * 10000) / 100,
+        pesisir_persen: JSON.stringify(m1).toLowerCase().includes("pesisir") ? 100 : ((initMatch && initMatch.bab1 && initMatch.bab1.pesisir_persen) || 0),
         desa_jauh_nama: maxDistV.name,
+        Desa_terjauh_kac: maxDistV.name,
         desa_jauh_val: Math.round(maxDistV.val * 100) / 100,
+        jarak_terjauh_kec: Math.round(maxDistV.val * 100) / 100,
         desa_tinggi_nama: maxElevV.name,
-        desa_tinggi_val: Math.round(maxElevV.val * 100) / 100
-      },
-      bab2: {
-        pns_total: safeParseInt(rawMerge.Bab2 && rawMerge.Bab2.T221K4B1, 16),
-        pns_laki: safeParseInt(rawMerge.Bab2 && rawMerge.Bab2.T221K2B1, 11),
-        pns_perempuan: safeParseInt(rawMerge.Bab2 && rawMerge.Bab2.T221K3B1, 5),
-        pend_sd_smp: 0,
-        pend_sma: 12.5,
-        pend_diploma: 0,
-        pend_s1: 68.75,
-        pend_s2: 18.75,
-        pend_s3: 0,
-        gol_i: 0,
-        gol_ii: 6.25,
-        gol_iii: 68.75,
-        gol_iv: 25.0
-      },
-      bab3: {
-        pend_total: safeParseInt(rawMerge.Bab3 && (rawMerge.Bab3.T311K4B1 || rawMerge.Bab3.jumlah_penduduk), 20970),
-        kepadatan: Math.round(20970 / (totalArea || 1)),
-        persen_laki: 51.0,
-        persen_perempuan: 49.0,
-        sex_ratio: 105.0,
-        usia_muda: 9.5,
-        usia_produktif: 66.0,
-        usia_lanjut: 1.8,
-        beban_tanggungan: 48.0,
-        desa_max_nama: villages[0] || "Gerendong",
-        desa_max_val: 3110,
-        desa_padat_nama: villages[1] || "Paniis",
-        desa_padat_val: 1324
-      },
-      bab4: {
-        f_tk: 6, f_sd: 18, f_smp: 4, f_sma: 0,
-        s_tk: 450, s_sd: 1850, s_smp: 950, s_sma: 620,
-        g_kurang: 192, g_buruk: 2, g_kurus: 126, g_stunting: 14,
-        jalan_penerangan: 85
-      },
-      bab5: {
-        panen_cabai_k: 24.0, panen_cabai_r: 18.0,
-        prod_cabai_k: 1200.0, prod_cabai_r: 1550.0,
-        prod_lengkeng: 12400.0, prod_duku: 18900.0
-      },
-      bab6: {
-        hotel_bintang: safeParseInt(rawMerge.Bab6 && rawMerge.Bab6.T611K2B1, 0),
-        hotel_non: safeParseInt(rawMerge.Bab6 && rawMerge.Bab6.T611K2B2, 0),
-        total_hotel: safeParseInt(rawMerge.Bab6 && rawMerge.Bab6.T611K2B1, 0) + safeParseInt(rawMerge.Bab6 && rawMerge.Bab6.T611K2B2, 0),
-        pos_kantor: safeParseInt(rawMerge.Bab6 && rawMerge.Bab6.T631K2B1, 0),
-        pos_keliling: safeParseInt(rawMerge.Bab6 && rawMerge.Bab6.T631K2B2, 0),
-        ekspedisi_swasta: safeParseInt(rawMerge.Bab6 && rawMerge.Bab6.T631K2B3, 0),
-        total_pos: safeParseInt(rawMerge.Bab6 && rawMerge.Bab6.T631K2B1, 0) + safeParseInt(rawMerge.Bab6 && rawMerge.Bab6.T631K2B2, 0) + safeParseInt(rawMerge.Bab6 && rawMerge.Bab6.T631K2B3, 0),
-        jml_jenis_industri: 10,
-        industri_utama: "Industri Makanan",
-        unit_industri_utama: 45,
-        akomodasi_status: "Tersedia",
-        akomodasi_teks: "Hotel Dan Penginapan",
-        pos_status: "Tersedia",
-        pos_teks: "Perusahaan/Agen Jasa Ekspedisi"
-      },
-      bab7: {
-        bank_umum_pem: safeParseInt(rawMerge.Bab7 && rawMerge.Bab7.T71K2B1, 0),
-        bank_umum_swasta: safeParseInt(rawMerge.Bab7 && rawMerge.Bab7.T71K2B2, 0),
-        bank_bpr: safeParseInt(rawMerge.Bab7 && rawMerge.Bab7.T71K2B3, 0),
-        total_bank: safeParseInt(rawMerge.Bab7 && rawMerge.Bab7.T71K2B1, 0) + safeParseInt(rawMerge.Bab7 && rawMerge.Bab7.T71K2B2, 0) + safeParseInt(rawMerge.Bab7 && rawMerge.Bab7.T71K2B3, 0),
-        koperasi_kud: safeParseInt(rawMerge.Bab7 && rawMerge.Bab7.T72K2B1, 0),
-        koperasi_kopinkra: safeParseInt(rawMerge.Bab7 && rawMerge.Bab7.T72K2B2, 0),
-        koperasi_kospin: safeParseInt(rawMerge.Bab7 && rawMerge.Bab7.T72K2B3, 0),
-        koperasi_lainnya: safeParseInt(rawMerge.Bab7 && rawMerge.Bab7.T72K2B4, 0),
-        total_koperasi: safeParseInt(rawMerge.Bab7 && rawMerge.Bab7.jumlah_koperasi, 0) || (safeParseInt(rawMerge.Bab7 && rawMerge.Bab7.T72K2B1, 0) + safeParseInt(rawMerge.Bab7 && rawMerge.Bab7.T72K2B2, 0) + safeParseInt(rawMerge.Bab7 && rawMerge.Bab7.T72K2B3, 0) + safeParseInt(rawMerge.Bab7 && rawMerge.Bab7.T72K2B4, 0)),
-        jenis_koperasi_teks: "Kospin Dan Koperasi Lainnya",
-        total_jenis_dagang: safeParseInt(rawMerge.Bab7 && rawMerge.Bab7.jenis_sarana_perdagangan, 4),
-        daftar_sarana_dagang: "Pasar, Pertokoan, Minimarket",
-        pertokoan: safeParseInt(rawMerge.Bab7 && rawMerge.Bab7.T73K2B1, 0),
-        pasar_permanen: safeParseInt(rawMerge.Bab7 && rawMerge.Bab7.T73K2B2, 0),
-        pasar_semi_permanen: safeParseInt(rawMerge.Bab7 && rawMerge.Bab7.T73K2B3, 0),
-        pasar_tanpa_bangunan: safeParseInt(rawMerge.Bab7 && rawMerge.Bab7.T73K2B4, 0),
-        pasar: safeParseInt(rawMerge.Bab7 && rawMerge.Bab7.T73K2B2, 0) + safeParseInt(rawMerge.Bab7 && rawMerge.Bab7.T73K2B3, 0) + safeParseInt(rawMerge.Bab7 && rawMerge.Bab7.T73K2B4, 0),
-        minimarket: safeParseInt(rawMerge.Bab7 && rawMerge.Bab7.T73K2B5, 0),
-        restoran: safeParseInt(rawMerge.Bab7 && rawMerge.Bab7.T73K2B6, 0),
-        bank_status: "Belum Ada",
-        bank_teks: "Belum Tersedia Layanan Bank"
-      },
+        Desa_tertinggi: maxElevV.name,
+        desa_tinggi_val: Math.round(maxElevV.val * 100) / 100,
+        Ketinggian: Math.round(maxElevV.val * 100) / 100,
+        jumlah_desa: jumlahDesa
+      }),
+      bab2: Object.assign({}, initMatch ? initMatch.bab2 : {}, {
+        pns_total: safeParseInt(rawMerge.Bab2 && rawMerge.Bab2.T221K4B1, (initMatch && initMatch.bab2 && initMatch.bab2.pns_total) || 16),
+        jumlah_pns: safeParseInt(rawMerge.Bab2 && rawMerge.Bab2.T221K4B1, (initMatch && initMatch.bab2 && initMatch.bab2.jumlah_pns) || 16),
+        pns_laki: safeParseInt(rawMerge.Bab2 && rawMerge.Bab2.T221K2B1, (initMatch && initMatch.bab2 && initMatch.bab2.pns_laki) || 11),
+        pns_perempuan: safeParseInt(rawMerge.Bab2 && rawMerge.Bab2.T221K3B1, (initMatch && initMatch.bab2 && initMatch.bab2.pns_perempuan) || 5),
+        desa_jumlah: jumlahDesa
+      }),
+      bab3: Object.assign({}, initMatch ? initMatch.bab3 : {}, {
+        pend_total: safeParseInt(rawMerge.Bab3 && (rawMerge.Bab3.T311K4B1 || rawMerge.Bab3.jumlah_penduduk), (initMatch && initMatch.bab3 && initMatch.bab3.pend_total) || 20970),
+        jumlah_penduduk: safeParseInt(rawMerge.Bab3 && (rawMerge.Bab3.T311K4B1 || rawMerge.Bab3.jumlah_penduduk), (initMatch && initMatch.bab3 && initMatch.bab3.jumlah_penduduk) || 20970),
+        kepadatan: Math.round((safeParseInt(rawMerge.Bab3 && (rawMerge.Bab3.T311K4B1 || rawMerge.Bab3.jumlah_penduduk), (initMatch && initMatch.bab3 && initMatch.bab3.pend_total) || 20970)) / (totalArea || 1)),
+        kepadatan_penduduk: Math.round((safeParseInt(rawMerge.Bab3 && (rawMerge.Bab3.T311K4B1 || rawMerge.Bab3.jumlah_penduduk), (initMatch && initMatch.bab3 && initMatch.bab3.pend_total) || 20970)) / (totalArea || 1)),
+        sex_ratio: safeParseNum(rawMerge.Bab3 && rawMerge.Bab3.rasio_jenis_kelamin, (initMatch && initMatch.bab3 && initMatch.bab3.sex_ratio) || 105.0),
+        rasio_jenis_kelamin: safeParseNum(rawMerge.Bab3 && rawMerge.Bab3.rasio_jenis_kelamin, (initMatch && initMatch.bab3 && initMatch.bab3.rasio_jenis_kelamin) || 105.0),
+        desa_max_nama: (villages && villages[0]) || "Gerendong",
+        desa_padat_nama: (villages && villages[1]) || "Paniis"
+      }),
+      bab4: Object.assign({}, initMatch ? initMatch.bab4 : {}),
+      bab5: Object.assign({}, initMatch ? initMatch.bab5 : {}),
+      bab6: Object.assign({}, initMatch ? initMatch.bab6 : {}, {
+        hotel_bintang: safeParseInt(rawMerge.Bab6 && rawMerge.Bab6.T611K2B1, (initMatch && initMatch.bab6 && initMatch.bab6.hotel_bintang) || 0),
+        hotel_non: safeParseInt(rawMerge.Bab6 && rawMerge.Bab6.T611K2B2, (initMatch && initMatch.bab6 && initMatch.bab6.hotel_non) || 0),
+        total_hotel: safeParseInt(rawMerge.Bab6 && rawMerge.Bab6.T611K2B1, 0) + safeParseInt(rawMerge.Bab6 && rawMerge.Bab6.T611K2B2, 0) || ((initMatch && initMatch.bab6 && initMatch.bab6.total_hotel) || 0),
+        pos_kantor: safeParseInt(rawMerge.Bab6 && rawMerge.Bab6.T631K2B1, (initMatch && initMatch.bab6 && initMatch.bab6.pos_kantor) || 0),
+        pos_keliling: safeParseInt(rawMerge.Bab6 && rawMerge.Bab6.T631K2B2, (initMatch && initMatch.bab6 && initMatch.bab6.pos_keliling) || 0),
+        ekspedisi_swasta: safeParseInt(rawMerge.Bab6 && rawMerge.Bab6.T631K2B3, (initMatch && initMatch.bab6 && initMatch.bab6.ekspedisi_swasta) || 0),
+        total_pos: safeParseInt(rawMerge.Bab6 && rawMerge.Bab6.T631K2B1, 0) + safeParseInt(rawMerge.Bab6 && rawMerge.Bab6.T631K2B2, 0) + safeParseInt(rawMerge.Bab6 && rawMerge.Bab6.T631K2B3, 0) || ((initMatch && initMatch.bab6 && initMatch.bab6.total_pos) || 0)
+      }),
+      bab7: Object.assign({}, initMatch ? initMatch.bab7 : {}, {
+        bank_umum_pem: safeParseInt(rawMerge.Bab7 && rawMerge.Bab7.T71K2B1, (initMatch && initMatch.bab7 && initMatch.bab7.bank_umum_pem) || 0),
+        bank_umum_swasta: safeParseInt(rawMerge.Bab7 && rawMerge.Bab7.T71K2B2, (initMatch && initMatch.bab7 && initMatch.bab7.bank_umum_swasta) || 0),
+        bank_bpr: safeParseInt(rawMerge.Bab7 && rawMerge.Bab7.T71K2B3, (initMatch && initMatch.bab7 && initMatch.bab7.bank_bpr) || 0),
+        total_bank: safeParseInt(rawMerge.Bab7 && rawMerge.Bab7.T71K2B1, 0) + safeParseInt(rawMerge.Bab7 && rawMerge.Bab7.T71K2B2, 0) + safeParseInt(rawMerge.Bab7 && rawMerge.Bab7.T71K2B3, 0) || ((initMatch && initMatch.bab7 && initMatch.bab7.total_bank) || 0),
+        koperasi_kud: safeParseInt(rawMerge.Bab7 && rawMerge.Bab7.T72K2B1, (initMatch && initMatch.bab7 && initMatch.bab7.koperasi_kud) || 0),
+        koperasi_kopinkra: safeParseInt(rawMerge.Bab7 && rawMerge.Bab7.T72K2B2, (initMatch && initMatch.bab7 && initMatch.bab7.koperasi_kopinkra) || 0),
+        koperasi_kospin: safeParseInt(rawMerge.Bab7 && rawMerge.Bab7.T72K2B3, (initMatch && initMatch.bab7 && initMatch.bab7.koperasi_kospin) || 0),
+        koperasi_lainnya: safeParseInt(rawMerge.Bab7 && rawMerge.Bab7.T72K2B4, (initMatch && initMatch.bab7 && initMatch.bab7.koperasi_lainnya) || 0),
+        total_koperasi: safeParseInt(rawMerge.Bab7 && rawMerge.Bab7.jumlah_koperasi, 0) || (safeParseInt(rawMerge.Bab7 && rawMerge.Bab7.T72K2B1, 0) + safeParseInt(rawMerge.Bab7 && rawMerge.Bab7.T72K2B2, 0) + safeParseInt(rawMerge.Bab7 && rawMerge.Bab7.T72K2B3, 0) + safeParseInt(rawMerge.Bab7 && rawMerge.Bab7.T72K2B4, 0)) || ((initMatch && initMatch.bab7 && initMatch.bab7.total_koperasi) || 0)
+      }),
       rawMerge: rawMerge,
-      rawMaster: {
+      rawMaster: (initMatch && initMatch.rawMaster) ? JSON.parse(JSON.stringify(initMatch.rawMaster)) : {
         Bab1_Geografi: {
           kecamatan: kecProper,
           luas_wilayah_km2: Math.round(totalArea * 100) / 100,
@@ -7314,9 +8459,22 @@ function handleSingleExcelFile(file, e) {
 
       for (let i = 0; i < count; i++) {
         const rawMaster = {};
+        const b1RowPrimary = (sheetDataByBab[1] && sheetDataByBab[1].rows[i]) || primaryRows[i] || {};
+        let kecName = safeFindValueByKeys(b1RowPrimary, ["kecamatan", "nama_kecamatan", "nama", "KECAMATAN"]) || (KECAMATAN_LIST[i] || `KECAMATAN_${i + 1}`);
+        kecName = String(kecName).trim().toUpperCase();
+        const kecProper = kecName.charAt(0).toUpperCase() + kecName.slice(1).toLowerCase();
+
         for (let b = 1; b <= 7; b++) {
           const stdKey = `Bab${b}_${["Geografi","Pemerintahan","Kependudukan","Sosial","Pertanian","Ekonomi","Keuangan"][b-1]}`;
-          rawMaster[stdKey] = (sheetDataByBab[b] && sheetDataByBab[b].rows[i]) || {};
+          let rRow = (sheetDataByBab[b] && sheetDataByBab[b].rows[i]) || {};
+          if (sheetDataByBab[b] && sheetDataByBab[b].rows && sheetDataByBab[b].rows.length > 0) {
+            const matchKec = sheetDataByBab[b].rows.find(r => {
+              const rName = safeFindValueByKeys(r, ["kecamatan", "nama_kecamatan", "nama", "KECAMATAN"]);
+              return rName && String(rName).trim().toUpperCase() === kecName;
+            });
+            if (matchKec) rRow = matchKec;
+          }
+          rawMaster[stdKey] = rRow;
         }
 
         const b1 = rawMaster["Bab1_Geografi"] || {};
@@ -7327,52 +8485,112 @@ function handleSingleExcelFile(file, e) {
         const b6 = rawMaster["Bab6_Ekonomi"] || {};
         const b7 = rawMaster["Bab7_Keuangan"] || {};
 
-        let kecName = safeFindValueByKeys(b1, ["kecamatan", "nama_kecamatan", "nama"]) || (KECAMATAN_LIST[i] || `KECAMATAN_${i + 1}`);
-        kecName = String(kecName).trim().toUpperCase();
-        const kecProper = kecName.charAt(0).toUpperCase() + kecName.slice(1).toLowerCase();
+        const initMatch = (typeof INITIAL_DISTRICTS_DATA !== "undefined" && INITIAL_DISTRICTS_DATA.find(d => (d.nama && d.nama.toUpperCase() === kecName) || d.no == (i + 1))) || null;
+        const villages = (initMatch && initMatch.villages && initMatch.villages.length > 0)
+          ? JSON.parse(JSON.stringify(initMatch.villages))
+          : [
+              { no: 1, nama: safeFindValueByKeys(b1, ["Desa_terluas", "desa_terluas", "desa_luas_nama"]) || "Desa 1", luas_km2: safeParseNum(safeFindValueByKeys(b1, ["Luas_desa_terluas", "luas_desa_terluas", "desa_luas_val"]), 2.5), persen_luas: 25.0, jarak_kec_km: 2.0, jarak_kab_km: 15.0, elevasi_mdpl: 50, jumlah_rw: 6, jumlah_rt: 18, aparatur: 10, pend_laki: 1500, pend_perempuan: 1450, pend_total: 2950, sex_ratio: 103.4, kepadatan: 350, sd_unit: 3, smp_unit: 1, guru_sd: 15, posyandu: 4, stunting_kasus: 3, panen_sayur_ha: 5.0, prod_sayur_kw: 120, prod_buah_kw: 450, akomodasi: 0, ekspedisi: 0, bank: 0, koperasi: 0, pasar: 1 },
+              { no: 2, nama: safeFindValueByKeys(b1, ["Desa_terkecil", "desa_terkecil", "desa_kecil_nama"]) || "Desa 2", luas_km2: safeParseNum(safeFindValueByKeys(b1, ["Luas_desa_terkecil", "luas_desa_terkecil", "desa_kecil_val"]), 1.2), persen_luas: 12.0, jarak_kec_km: 4.0, jarak_kab_km: 18.0, elevasi_mdpl: 75, jumlah_rw: 4, jumlah_rt: 12, aparatur: 10, pend_laki: 1200, pend_perempuan: 1150, pend_total: 2350, sex_ratio: 104.3, kepadatan: 400, sd_unit: 2, smp_unit: 0, guru_sd: 10, posyandu: 3, stunting_kasus: 2, panen_sayur_ha: 3.0, prod_sayur_kw: 80, prod_buah_kw: 250, akomodasi: 0, ekspedisi: 0, bank: 0, koperasi: 0, pasar: 0 }
+            ];
 
         newDistricts.push({
           no: i + 1,
           nama: kecName,
           nama_proper: kecProper,
-          bab1: {
-            luas_kec: safeParseNum(safeFindValueByKeys(b1, ["luas_wilayah_km2", "luas_kecamatan", "luas_kec", "luas_wilayah"]), 17.86),
-            desa_luas_nama: safeFindValueByKeys(b1, ["desa_terluas", "desa_luas_nama"]) || "Paniis",
-            desa_luas_val: safeParseNum(safeFindValueByKeys(b1, ["luas_desa_terluas", "desa_luas_val"]), 2.32),
-            lereng_persen: safeParseNum(safeFindValueByKeys(b1, ["persen_luas_kabupaten", "lereng_persen"]), 0.59),
+          villages: villages,
+          bab1: Object.assign({}, (initMatch && initMatch.bab1) || {}, b1, {
+            luas_kec: safeParseNum(safeFindValueByKeys(b1, ["luas_wilayah_km2", "luas_kecamatan", "luas_kec", "luas_wilayah"]), (initMatch && initMatch.bab1 && initMatch.bab1.luas_kec) || 17.86),
+            desa_luas_nama: safeFindValueByKeys(b1, ["Desa_terluas", "desa_terluas", "desa_luas_nama"]) || (initMatch && initMatch.bab1 && initMatch.bab1.desa_luas_nama) || "Paniis",
+            desa_luas_val: safeParseNum(safeFindValueByKeys(b1, ["Luas_desa_terluas", "luas_desa_terluas", "desa_luas_val"]), (initMatch && initMatch.bab1 && initMatch.bab1.desa_luas_val) || 2.32),
+            lereng_persen: safeParseNum(safeFindValueByKeys(b1, ["persen_luas_kabupaten", "lereng_persen"]), (initMatch && initMatch.bab1 && initMatch.bab1.lereng_persen) || 0.59),
             pesisir_persen: String(safeFindValueByKeys(b1, ["kategori_kecamatan", "karakteristik_daerah", "pesisir_persen"]) || "").toLowerCase().includes("pesisir") ? 100 : 0,
-            desa_jauh_nama: safeFindValueByKeys(b1, ["desa_terjauh_kac", "desa_terjauh_kab", "desa_jauh_nama"]) || "Paniis",
-            desa_jauh_val: safeParseNum(safeFindValueByKeys(b1, ["jarak_terjauh_kec", "jarak_terjauh_kab", "desa_jauh_val"]), 3.2),
-            desa_tinggi_nama: safeFindValueByKeys(b1, ["desa_tertinggi", "desa_tinggi_nama"]) || "Karangsetra",
-            desa_tinggi_val: safeParseNum(safeFindValueByKeys(b1, ["ketinggian", "desa_tinggi_val"]), 203)
-          },
-          bab2: {
-            pns_total: safeParseInt(safeFindValueByKeys(b2, ["jumlah_pns", "pns_total"]), 16),
-            pns_laki: safeParseInt(safeFindValueByKeys(b2, ["pns_laki"]), 11),
-            pns_perempuan: safeParseInt(safeFindValueByKeys(b2, ["pns_perempuan"]), 5),
-            pend_sd_smp: 0, pend_sma: 12.5, pend_diploma: 0, pend_s1: 68.75, pend_s2: 18.75, pend_s3: 0,
-            gol_i: 0, gol_ii: 6.25, gol_iii: 68.75, gol_iv: 25.0
-          },
-          bab3: {
-            pend_total: safeParseInt(safeFindValueByKeys(b3, ["jumlah_penduduk", "pend_total", "penduduk_total"]), 20970),
-            kepadatan: safeParseNum(safeFindValueByKeys(b3, ["kepadatan_penduduk", "kepadatan"]), 1174),
-            persen_laki: 51.0, persen_perempuan: 49.0, sex_ratio: 105.0,
-            usia_muda: 9.5, usia_produktif: 66.0, usia_lanjut: 1.8, beban_tanggungan: 48.0,
-            desa_max_nama: safeFindValueByKeys(b3, ["desa_penduduk_terbesar", "desa_max_nama"]) || "Gerendong",
-            desa_max_val: safeParseInt(safeFindValueByKeys(b3, ["jumlah_penduduk_terbesar", "desa_max_val"]), 3110),
-            desa_padat_nama: safeFindValueByKeys(b3, ["desa_terpadat", "desa_padat_nama"]) || "Paniis",
-            desa_padat_val: safeParseInt(safeFindValueByKeys(b3, ["kepadatan_desa_terpadat", "desa_padat_val"]), 1324)
-          },
-          bab4: {
-            f_tk: 6, f_sd: 18, f_smp: 4, f_sma: 0, s_tk: 450, s_sd: 1850, s_smp: 950, s_sma: 620,
-            g_kurang: 192, g_buruk: 2, g_kurus: 126, g_stunting: 14, jalan_penerangan: 85
-          },
-          bab5: {
-            panen_cabai_k: 24.0, panen_cabai_r: 18.0, prod_cabai_k: 1200.0, prod_cabai_r: 1550.0,
-            prod_lengkeng: 12400.0, prod_duku: 18900.0
-          },
-          bab6: { wisata_objek: 6, bts_menara: 14, sinyal_kuat: 94, angkot_jumlah: 20, jalan_kondisi: 89 },
-          bab7: { pasar: 4, toko: 18, minimarket: 9 },
+            desa_jauh_nama: safeFindValueByKeys(b1, ["Desa_terjauh_kac", "desa_terjauh_kac", "desa_terjauh_kab", "desa_jauh_nama"]) || (initMatch && initMatch.bab1 && initMatch.bab1.desa_jauh_nama) || "Paniis",
+            desa_jauh_val: safeParseNum(safeFindValueByKeys(b1, ["jarak_terjauh_kec", "jarak_terjauh_kab", "desa_jauh_val"]), (initMatch && initMatch.bab1 && initMatch.bab1.desa_jauh_val) || 3.2),
+            desa_tinggi_nama: safeFindValueByKeys(b1, ["Desa_tertinggi", "desa_tertinggi", "desa_tinggi_nama"]) || (initMatch && initMatch.bab1 && initMatch.bab1.desa_tinggi_nama) || "Karangsetra",
+            desa_tinggi_val: safeParseNum(safeFindValueByKeys(b1, ["Ketinggian", "ketinggian", "desa_tinggi_val"]), (initMatch && initMatch.bab1 && initMatch.bab1.desa_tinggi_val) || 203)
+          }),
+          bab2: Object.assign({}, (initMatch && initMatch.bab2) || {}, b2, {
+            pns_total: safeParseInt(safeFindValueByKeys(b2, ["jumlah_pns", "pns_total"]), (initMatch && initMatch.bab2 && initMatch.bab2.pns_total) || 16),
+            pns_laki: safeParseInt(safeFindValueByKeys(b2, ["pns_laki", "jumlah_pns_laki"]), (initMatch && initMatch.bab2 && initMatch.bab2.pns_laki) || 11),
+            pns_perempuan: safeParseInt(safeFindValueByKeys(b2, ["pns_perempuan", "jumlah_pns_perempuan"]), (initMatch && initMatch.bab2 && initMatch.bab2.pns_perempuan) || 5),
+            pend_sd_smp: safeParseNum(safeFindValueByKeys(b2, ["pendidikan_smp", "pend_sd_smp"]), (initMatch && initMatch.bab2 && initMatch.bab2.pend_sd_smp) || 0),
+            pend_sma: safeParseNum(safeFindValueByKeys(b2, ["pendidikan_sma", "pend_sma"]), (initMatch && initMatch.bab2 && initMatch.bab2.pend_sma) || 12.5),
+            pend_diploma: safeParseNum(safeFindValueByKeys(b2, ["pendidikan_d3", "pendidikan_d4", "pend_diploma"]), (initMatch && initMatch.bab2 && initMatch.bab2.pend_diploma) || 0),
+            pend_s1: safeParseNum(safeFindValueByKeys(b2, ["pendidikan_sarjana", "pend_s1"]), (initMatch && initMatch.bab2 && initMatch.bab2.pend_s1) || 68.75),
+            pend_s2: safeParseNum(safeFindValueByKeys(b2, ["pendidikan_magister", "pend_s2"]), (initMatch && initMatch.bab2 && initMatch.bab2.pend_s2) || 18.75),
+            pend_s3: 0,
+            gol_i: safeParseNum(safeFindValueByKeys(b2, ["gol_i_persen", "gol_i"]), 0),
+            gol_ii: safeParseNum(safeFindValueByKeys(b2, ["golongan_ii_persen", "gol_ii"]), (initMatch && initMatch.bab2 && initMatch.bab2.gol_ii) || 6.25),
+            gol_iii: safeParseNum(safeFindValueByKeys(b2, ["golongan_iii_persen", "gol_iii"]), (initMatch && initMatch.bab2 && initMatch.bab2.gol_iii) || 68.75),
+            gol_iv: safeParseNum(safeFindValueByKeys(b2, ["golongan_iv_persen", "gol_iv"]), (initMatch && initMatch.bab2 && initMatch.bab2.gol_iv) || 25.0)
+          }),
+          bab3: Object.assign({}, (initMatch && initMatch.bab3) || {}, b3, {
+            pend_total: safeParseInt(safeFindValueByKeys(b3, ["jumlah_penduduk", "pend_total", "penduduk_total"]), (initMatch && initMatch.bab3 && initMatch.bab3.pend_total) || 20970),
+            kepadatan: safeParseNum(safeFindValueByKeys(b3, ["kepadatan_penduduk", "kepadatan"]), (initMatch && initMatch.bab3 && initMatch.bab3.kepadatan) || 1174),
+            persen_laki: (initMatch && initMatch.bab3 && initMatch.bab3.persen_laki) || 51.0,
+            persen_perempuan: (initMatch && initMatch.bab3 && initMatch.bab3.persen_perempuan) || 49.0,
+            sex_ratio: safeParseNum(safeFindValueByKeys(b3, ["rasio_jenis_kelamin", "sex_ratio"]), (initMatch && initMatch.bab3 && initMatch.bab3.sex_ratio) || 105.0),
+            usia_muda: safeParseNum(safeFindValueByKeys(b3, ["persen_umur_tertinggi", "usia_muda"]), (initMatch && initMatch.bab3 && initMatch.bab3.usia_muda) || 9.5),
+            usia_produktif: (initMatch && initMatch.bab3 && initMatch.bab3.usia_produktif) || 66.0,
+            usia_lanjut: safeParseNum(safeFindValueByKeys(b3, ["persen_umur_terendah", "usia_lanjut"]), (initMatch && initMatch.bab3 && initMatch.bab3.usia_lanjut) || 1.8),
+            beban_tanggungan: safeParseNum(safeFindValueByKeys(b3, ["rasio_ketergantungan", "beban_tanggungan"]), (initMatch && initMatch.bab3 && initMatch.bab3.beban_tanggungan) || 48.0),
+            desa_max_nama: safeFindValueByKeys(b3, ["desa_penduduk_terbesar", "desa_max_nama"]) || (initMatch && initMatch.bab3 && initMatch.bab3.desa_max_nama) || "Gerendong",
+            desa_max_val: safeParseInt(safeFindValueByKeys(b3, ["jumlah_penduduk_terbesar", "desa_max_val"]), (initMatch && initMatch.bab3 && initMatch.bab3.desa_max_val) || 3110),
+            desa_padat_nama: safeFindValueByKeys(b3, ["desa_terpadat", "desa_padat_nama"]) || (initMatch && initMatch.bab3 && initMatch.bab3.desa_padat_nama) || "Paniis",
+            desa_padat_val: safeParseInt(safeFindValueByKeys(b3, ["kepadatan_desa_terpadat", "desa_padat_val"]), (initMatch && initMatch.bab3 && initMatch.bab3.desa_padat_val) || 1324)
+          }),
+          bab4: Object.assign({}, (initMatch && initMatch.bab4) || {}, b4, {
+            f_tk: safeParseInt(safeFindValueByKeys(b4, ["Jumlah_TK_RA", "f_tk"]), (initMatch && initMatch.bab4 && initMatch.bab4.f_tk) || 6),
+            f_sd: safeParseInt(safeFindValueByKeys(b4, ["Jumlah_unit_terbanyak", "f_sd"]), (initMatch && initMatch.bab4 && initMatch.bab4.f_sd) || 18),
+            f_smp: safeParseInt(safeFindValueByKeys(b4, ["Jumlah_SMP", "f_smp"]), (initMatch && initMatch.bab4 && initMatch.bab4.f_smp) || 4),
+            f_sma: safeParseInt(safeFindValueByKeys(b4, ["Jumlah_SMA", "f_sma"]), (initMatch && initMatch.bab4 && initMatch.bab4.f_sma) || 0),
+            s_tk: safeParseInt(safeFindValueByKeys(b4, ["Guru_TK_RA", "s_tk"]), (initMatch && initMatch.bab4 && initMatch.bab4.s_tk) || 450),
+            s_sd: safeParseInt(safeFindValueByKeys(b4, ["Total_jumlah_tenaga_pendidik_terbanyak", "Guru_sd_mi_negeri", "s_sd"]), (initMatch && initMatch.bab4 && initMatch.bab4.s_sd) || 1850),
+            s_smp: safeParseInt(safeFindValueByKeys(b4, ["Guru_SMP", "s_smp"]), (initMatch && initMatch.bab4 && initMatch.bab4.s_smp) || 950),
+            s_sma: safeParseInt(safeFindValueByKeys(b4, ["Guru_SMA", "s_sma"]), (initMatch && initMatch.bab4 && initMatch.bab4.s_sma) || 620),
+            g_kurang: safeParseInt(safeFindValueByKeys(b4, ["total_status_terbanyak1", "g_kurang"]), (initMatch && initMatch.bab4 && initMatch.bab4.g_kurang) || 192),
+            g_buruk: safeParseInt(safeFindValueByKeys(b4, ["total_status_tersedikit", "g_buruk"]), (initMatch && initMatch.bab4 && initMatch.bab4.g_buruk) || 2),
+            g_kurus: (initMatch && initMatch.bab4 && initMatch.bab4.g_kurus) || 126,
+            g_stunting: safeParseInt(safeFindValueByKeys(b4, ["total_status_terbanyak2", "g_stunting"]), (initMatch && initMatch.bab4 && initMatch.bab4.g_stunting) || 14),
+            jalan_penerangan: (initMatch && initMatch.bab4 && initMatch.bab4.jalan_penerangan) || 85
+          }),
+          bab5: Object.assign({}, (initMatch && initMatch.bab5) || {}, b5, {
+            panen_cabai_k: safeParseNum(safeFindValueByKeys(b5, ["luas_panen_terbesar_a", "panen_cabai_k"]), (initMatch && initMatch.bab5 && initMatch.bab5.panen_cabai_k) || 24.0),
+            panen_cabai_r: safeParseNum(safeFindValueByKeys(b5, ["luas_panen_terbesar_b", "panen_cabai_r"]), (initMatch && initMatch.bab5 && initMatch.bab5.panen_cabai_r) || 18.0),
+            prod_cabai_k: safeParseNum(safeFindValueByKeys(b5, ["produksi_terbesar_a", "prod_cabai_k"]), (initMatch && initMatch.bab5 && initMatch.bab5.prod_cabai_k) || 1200.0),
+            prod_cabai_r: safeParseNum(safeFindValueByKeys(b5, ["produksi_terbesar_b", "prod_cabai_r"]), (initMatch && initMatch.bab5 && initMatch.bab5.prod_cabai_r) || 1550.0),
+            prod_lengkeng: safeParseNum(safeFindValueByKeys(b5, ["volume_buah_2025", "prod_lengkeng"]), (initMatch && initMatch.bab5 && initMatch.bab5.prod_lengkeng) || 12400.0),
+            prod_duku: safeParseNum(safeFindValueByKeys(b5, ["volume_buah_2024", "prod_duku"]), (initMatch && initMatch.bab5 && initMatch.bab5.prod_duku) || 18900.0)
+          }),
+          bab6: Object.assign({}, (initMatch && initMatch.bab6) || {}, b6, {
+            wisata_objek: (initMatch && initMatch.bab6 && initMatch.bab6.wisata_objek) || 6,
+            bts_menara: (initMatch && initMatch.bab6 && initMatch.bab6.bts_menara) || 14,
+            sinyal_kuat: (initMatch && initMatch.bab6 && initMatch.bab6.sinyal_kuat) || 94,
+            angkot_jumlah: (initMatch && initMatch.bab6 && initMatch.bab6.angkot_jumlah) || 20,
+            jalan_kondisi: (initMatch && initMatch.bab6 && initMatch.bab6.jalan_kondisi) || 89,
+            hotel_bintang: (initMatch && initMatch.bab6 && initMatch.bab6.hotel_bintang) || 0,
+            hotel_non: (initMatch && initMatch.bab6 && initMatch.bab6.hotel_non) || 0,
+            total_hotel: (initMatch && initMatch.bab6 && initMatch.bab6.total_hotel) || 0,
+            pos_kantor: (initMatch && initMatch.bab6 && initMatch.bab6.pos_kantor) || 0,
+            pos_keliling: (initMatch && initMatch.bab6 && initMatch.bab6.pos_keliling) || 0,
+            ekspedisi_swasta: (initMatch && initMatch.bab6 && initMatch.bab6.ekspedisi_swasta) || 0,
+            total_pos: (initMatch && initMatch.bab6 && initMatch.bab6.total_pos) || 0,
+            akomodasi_teks: safeFindValueByKeys(b6, ["jenis_sarana_akomodasi_yang_tersedia", "akomodasi_teks"]) || ((initMatch && initMatch.bab6 && initMatch.bab6.akomodasi_teks) || "Tidak Tersedia"),
+            pos_teks: safeFindValueByKeys(b6, ["keberadaan_fasilitas_pos_ekspedisi", "pos_teks"]) || ((initMatch && initMatch.bab6 && initMatch.bab6.pos_teks) || "Tidak Tersedia")
+          }),
+          bab7: Object.assign({}, (initMatch && initMatch.bab7) || {}, b7, {
+            pasar: safeParseInt(safeFindValueByKeys(b7, ["jenis_sarana_perdagangan", "pasar"]), (initMatch && initMatch.bab7 && initMatch.bab7.pasar) || 4),
+            toko: (initMatch && initMatch.bab7 && initMatch.bab7.toko) || 18,
+            minimarket: (initMatch && initMatch.bab7 && initMatch.bab7.minimarket) || 9,
+            bank_status: safeFindValueByKeys(b7, ["sudah_belum_ada_bank", "bank_status"]) || ((initMatch && initMatch.bab7 && initMatch.bab7.bank_status) || "Belum"),
+            bank_teks: safeFindValueByKeys(b7, ["keberadaan_bank", "bank_teks"]) || ((initMatch && initMatch.bab7 && initMatch.bab7.bank_teks) || "Tidak Ada"),
+            total_bank: (initMatch && initMatch.bab7 && initMatch.bab7.total_bank) || 0,
+            total_koperasi: safeParseInt(safeFindValueByKeys(b7, ["jumlah_koperasi", "total_koperasi"]), (initMatch && initMatch.bab7 && initMatch.bab7.total_koperasi) || 1),
+            jumlah_koperasi: safeParseInt(safeFindValueByKeys(b7, ["jumlah_koperasi", "total_koperasi"]), (initMatch && initMatch.bab7 && initMatch.bab7.jumlah_koperasi) || 1),
+            jenis_koperasi: safeFindValueByKeys(b7, ["jenis_koperasi", "jenis_koperasi_teks"]) || ((initMatch && initMatch.bab7 && initMatch.bab7.jenis_koperasi) || "-"),
+            jenis_sarana_perdagangan: safeParseInt(safeFindValueByKeys(b7, ["jenis_sarana_perdagangan", "total_jenis_dagang"]), (initMatch && initMatch.bab7 && initMatch.bab7.jenis_sarana_perdagangan) || 1),
+            daftar_sarana_perdagangan: safeFindValueByKeys(b7, ["daftar_sarana_perdagangan", "daftar_sarana_dagang"]) || ((initMatch && initMatch.bab7 && initMatch.bab7.daftar_sarana_perdagangan) || "-")
+          }),
           rawMaster: rawMaster
         });
       }
@@ -9839,9 +11057,12 @@ function exportInterpretasiDocx(distIdx = null) {
   const targetIdx = (distIdx !== null && distIdx !== undefined) ? distIdx : activeIndex;
   const currentDistrict = districtsData[targetIdx] || { nama: "KECAMATAN" };
   const distName = (currentDistrict.nama || "KECAMATAN").toUpperCase();
-  const data = generateComprehensiveInterpretasi(targetIdx, interpretasiScope, interpretasiTone, interpretasiLang);
+  const currentLang = interpretasiLang || "id";
+  const data = generateComprehensiveInterpretasi(targetIdx, interpretasiScope, interpretasiTone, currentLang);
   const editContainer = document.getElementById("interpretasi-editable-container");
   const textContent = (targetIdx === activeIndex && editContainer) ? editContainer.innerHTML : data.narrativeHtml;
+
+  const langLabel = (currentLang === "id") ? "Bahasa Indonesia" : (currentLang === "en" ? "English" : "Bilingual (Bahasa Indonesia & English)");
 
   const docHtml = `
     <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
@@ -9850,9 +11071,10 @@ function exportInterpretasiDocx(distIdx = null) {
       <title>Interpretasi KCDA - ${distName}</title>
       <style>
         body { font-family: 'Calibri', 'Segoe UI', Arial, sans-serif; font-size: 11pt; line-height: 1.5; color: #1e293b; }
-        h1 { font-size: 16pt; color: #1e3a8a; border-bottom: 2px solid #2563eb; padding-bottom: 6px; margin-bottom: 12px; }
+        h1 { font-size: 15pt; color: #1e3a8a; border-bottom: 2px solid #2563eb; padding-bottom: 6px; margin-top: 18px; margin-bottom: 12px; }
         h2 { font-size: 13pt; color: #1e40af; margin-top: 18px; margin-bottom: 8px; }
         h3 { font-size: 11.5pt; color: #0f172a; margin-top: 12px; margin-bottom: 6px; }
+        h4 { font-size: 11pt; font-weight: bold; margin-top: 10px; margin-bottom: 4px; }
         p { margin-bottom: 10px; text-align: justify; }
         .header-box { background: #f8fafc; border: 1px solid #cbd5e1; padding: 12px 16px; margin-bottom: 20px; border-radius: 6px; }
         .meta-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
@@ -9871,7 +11093,7 @@ function exportInterpretasiDocx(distIdx = null) {
         <tr><td width="25%"><strong>Wilayah Kecamatan</strong></td><td>: KECAMATAN ${distName}</td></tr>
         <tr><td><strong>Cakupan Analisis</strong></td><td>: ${data.title}</td></tr>
         <tr><td><strong>Gaya Penulisan</strong></td><td>: ${interpretasiTone.toUpperCase()}</td></tr>
-        <tr><td><strong>Bahasa</strong></td><td>: ${interpretasiLang === 'id' ? 'Bahasa Indonesia' : 'English'}</td></tr>
+        <tr><td><strong>Bahasa</strong></td><td>: <strong>${langLabel}</strong></td></tr>
         <tr><td><strong>Tanggal Dibuat</strong></td><td>: ${new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</td></tr>
       </table>
 
@@ -9886,15 +11108,17 @@ function exportInterpretasiDocx(distIdx = null) {
         </div>
       `).join('')}
 
-      <h2>III. Rekomendasi Kebijakan & Perencanaan Daerah</h2>
-      ${data.recommendations.map((r, i) => `
-        <div class="rec-box">
-          <strong>(${i+1})</strong> ${r.text}
-        </div>
-      `).join('')}
+      ${(data.recommendations && data.recommendations.length > 0) ? `
+        <h2>III. Rekomendasi Kebijakan & Perencanaan Daerah</h2>
+        ${data.recommendations.map((r, i) => `
+          <div class="rec-box">
+            <strong>(${i+1})</strong> ${r.text}
+          </div>
+        `).join('')}
+      ` : ''}
 
       <div style="margin-top: 30px; border-top: 1px solid #cbd5e1; padding-top: 10px; font-size: 9pt; color: #64748b; text-align: center;">
-        Dokumen ini dibuat otomatis oleh Sistem SMARTGRAF BPS Kabupaten Pandeglang.
+        Dokumen ini dibuat otomatis oleh Sistem SMARTGRAF BPS Kabupaten Pandeglang (${langLabel}).
       </div>
     </body>
     </html>
@@ -9903,12 +11127,12 @@ function exportInterpretasiDocx(distIdx = null) {
   const blob = new Blob([docHtml], { type: "application/msword;charset=utf-8" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  a.download = `Naskah_Interpretasi_KCDA_${distName}.doc`;
+  a.download = `Naskah_Interpretasi_KCDA_${distName}_${currentLang.toUpperCase()}.doc`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
 
-  showToast("success", "Dokumen Word Terunduh!", `Naskah interpretasi ${distName} berhasil diunduh dalam format .doc/Word.`);
+  showToast("success", "Dokumen Word Terunduh! 📄", `Naskah interpretasi ${distName} (${langLabel}) berhasil diunduh.`);
 }
 
 function exportAll35InterpretasiDocx() {
@@ -9946,7 +11170,8 @@ function exportAll35InterpretasiDocx() {
 
   districtsData.forEach((d, idx) => {
     const distName = (d.nama || KECAMATAN_LIST[idx] || `Kecamatan_${idx+1}`).toUpperCase();
-    const data = generateComprehensiveInterpretasi(idx, "full", "formal", "id");
+    const currentLang = interpretasiLang || "id";
+    const data = generateComprehensiveInterpretasi(idx, "full", interpretasiTone || "formal", currentLang);
 
     docHtml += `
       <div class="page-break"></div>
@@ -10006,7 +11231,8 @@ async function exportAll35InterpretasiZIP() {
 
   districtsData.forEach((d, idx) => {
     const distName = `${String(idx + 1).padStart(2, '0')}_${(d.nama || `Kecamatan_${idx+1}`).toUpperCase()}`;
-    const data = generateComprehensiveInterpretasi(idx, "full", "formal", "id");
+    const currentLang = interpretasiLang || "id";
+    const data = generateComprehensiveInterpretasi(idx, "full", interpretasiTone || "formal", currentLang);
 
     const singleDocHtml = `
       <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>

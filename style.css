@@ -63,34 +63,39 @@ body {
 .sidebar-new .brand {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 24px;
+  gap: 14px;
+  padding: 20px 18px;
   border-bottom: 1px solid #1e293b;
 }
 .sidebar-new .brand .logo-icon {
   background: #ffffff;
-  width: 38px;
-  height: 38px;
-  border-radius: 9px;
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
   flex-shrink: 0;
-  padding: 4px;
+  padding: 5px;
   box-sizing: border-box;
 }
 .sidebar-new .brand h2 {
-  font-size: 16px;
-  font-weight: 700;
-  color: white;
+  font-size: 19px;
+  font-weight: 900;
+  color: #ffffff;
   margin: 0;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.6px;
+  line-height: 1.15;
 }
 .sidebar-new .brand span {
-  font-size: 9px;
-  color: #64748b;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #94a3b8;
   display: block;
+  margin-top: 3px;
+  letter-spacing: 0.2px;
+  line-height: 1.3;
 }
 .sidebar-new .nav-menu {
   flex: 1;
