@@ -21,6 +21,8 @@
   --border-glass: rgba(37, 99, 235, 0.15);
   --text-primary: #ffffff;
   --text-secondary: rgba(255, 255, 255, 0.8);
+  --text-unit: #fde047;
+  --card-bg-sub: rgba(255, 255, 255, 0.08);
 }
 
 * {

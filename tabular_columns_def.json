@@ -649,103 +649,63 @@
       "width": "140px"
     },
     {
-      "label": "Jumlah Jenis Sayuran",
+      "label": "Jumlah Jenis Sayuran (2025)",
       "field": "jumlah_jenis_sayuran",
       "parent": "bab5"
     },
     {
-      "label": "Daftar Sayuran",
+      "label": "Daftar Sayuran (2025)",
       "field": "daftar_sayuran",
       "parent": "bab5"
     },
     {
-      "label": "Tahun A",
-      "field": "tahun_a",
-      "parent": "bab5"
-    },
-    {
-      "label": "Tanaman Luas Panen Terbesar A",
-      "field": "tanaman_luas_panen_terbesar_a",
-      "parent": "bab5"
-    },
-    {
-      "label": "Luas Panen Terbesar A",
-      "field": "luas_panen_terbesar_a",
-      "parent": "bab5"
-    },
-    {
-      "label": "Tanaman Produksi Terbesar A",
-      "field": "tanaman_produksi_terbesar_a",
-      "parent": "bab5"
-    },
-    {
-      "label": "Produksi Terbesar A",
-      "field": "produksi_terbesar_a",
-      "parent": "bab5"
-    },
-    {
-      "label": "Tahun B",
-      "field": "tahun_b",
-      "parent": "bab5"
-    },
-    {
-      "label": "Tanaman Luas Panen Terbesar B",
+      "label": "Tanaman Luas Panen Terbesar (2025)",
       "field": "tanaman_luas_panen_terbesar_b",
       "parent": "bab5"
     },
     {
-      "label": "Luas Panen Terbesar B",
+      "label": "Luas Panen Terbesar (Ha) (2025)",
       "field": "luas_panen_terbesar_b",
       "parent": "bab5"
     },
     {
-      "label": "Tanaman Produksi Terbesar B",
+      "label": "Tanaman Produksi Terbesar (2025)",
       "field": "tanaman_produksi_terbesar_b",
       "parent": "bab5"
     },
     {
-      "label": "Produksi Terbesar B",
+      "label": "Produksi Terbesar (Kw) (2025)",
       "field": "produksi_terbesar_b",
       "parent": "bab5"
     },
     {
-      "label": "Jumlah Jenis Biofarma",
+      "label": "Jumlah Jenis Biofarma (2025)",
       "field": "jumlah_jenis_biofarma",
       "parent": "bab5"
     },
     {
-      "label": "Daftar Biofarma",
+      "label": "Daftar Biofarma (2025)",
       "field": "daftar_biofarma",
       "parent": "bab5"
     },
     {
-      "label": "Jumlah Jenis Buah Tahunan",
+      "label": "Jumlah Jenis Buah Tahunan (2025)",
       "field": "jumlah_jenis_buah_tahunan",
       "parent": "bab5"
     },
     {
-      "label": "Daftar Buah Tahunan",
+      "label": "Daftar Buah Tahunan (2025)",
       "field": "daftar_buah_tahunan",
       "parent": "bab5"
     },
     {
-      "label": "Buah Utama 2025",
+      "label": "Buah Utama (2025)",
       "field": "buah_utama_2025",
       "parent": "bab5"
     },
     {
-      "label": "Volume Buah 2025",
+      "label": "Volume Buah (Kw) (2025)",
       "field": "volume_buah_2025",
-      "parent": "bab5"
-    },
-    {
-      "label": "Buah Utama 2024",
-      "field": "buah_utama_2024",
-      "parent": "bab5"
-    },
-    {
-      "label": "Volume Buah 2024",
-      "field": "volume_buah_2024",
       "parent": "bab5"
     }
   ],

@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BPS Infografis KCDA - 7 Bab Otomatis</title>
-  <link rel="stylesheet" href="style_v1.css">
+  <link rel="stylesheet" href="style_v1.css?v=20260917_v6_bilingual_enlarged_all">
   
   <!-- Pustaka Eksternal via CDN -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -939,11 +939,11 @@
                 </div>
                 <!-- Quick Copy & Download Actions -->
                 <div style="display: flex; gap: 6px; margin-top: 8px;">
-                  <button type="button" class="btn btn-sm" onclick="copyChartImageToClipboard(1, activeChartStudioBab)" style="flex: 1; font-size: 11px; font-weight: 700; background: #eff6ff; color: #2563eb; border: 1.5px solid #bfdbfe; border-radius: 7px; padding: 7px 8px; display: inline-flex; align-items: center; justify-content: center; gap: 4px; cursor: pointer; transition: all 0.2s;" title="Salin gambar grafik ke clipboard. Langsung tekan Ctrl + V di Microsoft Word atau InDesign">
-                    📋 Salin Gambar (Ctrl+V)
+                  <button type="button" id="chart1-copy-btn" class="btn btn-sm" onclick="copyChartImageToClipboard(1, activeChartStudioBab)" style="flex: 1; font-size: 11px; font-weight: 700; background: #eff6ff; color: #2563eb; border: 1.5px solid #bfdbfe; border-radius: 7px; padding: 7px 8px; display: inline-flex; align-items: center; justify-content: center; gap: 4px; cursor: pointer; transition: all 0.2s;" title="Salin gambar grafik ke clipboard. Langsung tekan Ctrl + V di Microsoft Word atau InDesign">
+                    📋 Salin G01_1 (Ctrl+V)
                   </button>
-                  <button type="button" class="btn btn-sm" onclick="exportSingleChartPNG(1, activeChartStudioBab)" style="font-size: 11px; font-weight: 700; background: #ffffff; color: #334155; border: 1.5px solid #cbd5e1; border-radius: 7px; padding: 7px 10px; display: inline-flex; align-items: center; justify-content: center; gap: 4px; cursor: pointer; transition: all 0.2s;" title="Unduh gambar PNG HD">
-                    📥 Unduh PNG
+                  <button type="button" id="chart1-download-btn" class="btn btn-sm" onclick="exportSingleChartPNG(1, activeChartStudioBab)" style="font-size: 11px; font-weight: 700; background: #ffffff; color: #334155; border: 1.5px solid #cbd5e1; border-radius: 7px; padding: 7px 10px; display: inline-flex; align-items: center; justify-content: center; gap: 4px; cursor: pointer; transition: all 0.2s;" title="Unduh gambar PNG HD">
+                    📥 Unduh G01_1.png
                   </button>
                 </div>
               </div>
@@ -996,11 +996,11 @@
                 </div>
                 <!-- Quick Copy & Download Actions -->
                 <div style="display: flex; gap: 6px; margin-top: 8px;">
-                  <button type="button" class="btn btn-sm" onclick="copyChartImageToClipboard(2, activeChartStudioBab)" style="flex: 1; font-size: 11px; font-weight: 700; background: #eff6ff; color: #2563eb; border: 1.5px solid #bfdbfe; border-radius: 7px; padding: 7px 8px; display: inline-flex; align-items: center; justify-content: center; gap: 4px; cursor: pointer; transition: all 0.2s;" title="Salin gambar grafik ke clipboard. Langsung tekan Ctrl + V di Microsoft Word atau InDesign">
-                    📋 Salin Gambar (Ctrl+V)
+                  <button type="button" id="chart2-copy-btn" class="btn btn-sm" onclick="copyChartImageToClipboard(2, activeChartStudioBab)" style="flex: 1; font-size: 11px; font-weight: 700; background: #eff6ff; color: #2563eb; border: 1.5px solid #bfdbfe; border-radius: 7px; padding: 7px 8px; display: inline-flex; align-items: center; justify-content: center; gap: 4px; cursor: pointer; transition: all 0.2s;" title="Salin gambar grafik ke clipboard. Langsung tekan Ctrl + V di Microsoft Word atau InDesign">
+                    📋 Salin G01_2 (Ctrl+V)
                   </button>
-                  <button type="button" class="btn btn-sm" onclick="exportSingleChartPNG(2, activeChartStudioBab)" style="font-size: 11px; font-weight: 700; background: #ffffff; color: #334155; border: 1.5px solid #cbd5e1; border-radius: 7px; padding: 7px 10px; display: inline-flex; align-items: center; justify-content: center; gap: 4px; cursor: pointer; transition: all 0.2s;" title="Unduh gambar PNG HD">
-                    📥 Unduh PNG
+                  <button type="button" id="chart2-download-btn" class="btn btn-sm" onclick="exportSingleChartPNG(2, activeChartStudioBab)" style="font-size: 11px; font-weight: 700; background: #ffffff; color: #334155; border: 1.5px solid #cbd5e1; border-radius: 7px; padding: 7px 10px; display: inline-flex; align-items: center; justify-content: center; gap: 4px; cursor: pointer; transition: all 0.2s;" title="Unduh gambar PNG HD">
+                    📥 Unduh G01_2.png
                   </button>
                 </div>
               </div>
@@ -1032,6 +1032,10 @@
                 Salin Narasi
               </button>
 
+              <button id="btn-interpretasi-export-excel" class="btn btn-primary btn-sm" onclick="exportInterpretasiExcel()" style="display: inline-flex; align-items: center; gap: 6px; font-weight: 700; padding: 8px 15px; background: linear-gradient(135deg, #059669, #10b981); color: white; border: none; border-radius: 8px; cursor: pointer; box-shadow: 0 2px 8px rgba(16,185,129,0.25);" title="Unduh naskah interpretasi Bab 1-7 Bahasa Indonesia & English dalam format Excel (.xlsx)">
+                <span>📗</span> Ekspor Excel (.xlsx)
+              </button>
+
               <button id="btn-interpretasi-export-word" class="btn btn-primary btn-sm" onclick="exportInterpretasiDocx()" style="display: inline-flex; align-items: center; gap: 6px; font-weight: 700; padding: 8px 15px; background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; border: none; border-radius: 8px; cursor: pointer; box-shadow: 0 2px 8px rgba(37,99,235,0.25);">
                 <span>📄</span> Ekspor Word (.doc)
               </button>
@@ -1040,7 +1044,7 @@
                 Terapkan ke Infografis
               </button>
 
-              <button class="btn btn-primary btn-sm" onclick="navigateToView('ekspor-cetak')" style="display: inline-flex; align-items: center; gap: 6px; font-weight: 700; padding: 8px 16px; background: linear-gradient(135deg, #059669, #10b981); border: none; color: #ffffff; border-radius: 8px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);" title="Buka menu Ekspor & Cetak Massal untuk mengunduh naskah Word / Teks 1 atau 35 kecamatan">
+              <button class="btn btn-primary btn-sm" onclick="navigateToView('ekspor-cetak')" style="display: inline-flex; align-items: center; gap: 6px; font-weight: 700; padding: 8px 16px; background: linear-gradient(135deg, #0f172a, #334155); border: none; color: #ffffff; border-radius: 8px; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.25);" title="Buka menu Ekspor & Cetak Massal untuk mengunduh naskah Excel, Word, atau Teks 1 atau 35 kecamatan">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
                 🚀 Buka Menu Ekspor Massal &raquo;
               </button>
@@ -1523,20 +1527,20 @@
                 <span class="badge" style="background: #f0fdf4; color: #15803d; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 6px;">14 Chart / Kec</span>
               </div>
 
-              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px;">
                 <!-- 2.1 Single District 14 Charts -->
                 <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px; display: flex; flex-direction: column; justify-content: space-between;">
                   <div>
                     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                      <span style="font-size: 14px; font-weight: 700; color: #0f172a;">Paket 14 Grafik (Kecamatan Aktif)</span>
-                      <span style="font-size: 9.5px; background: #e0e7ff; color: #4338ca; padding: 2px 6px; border-radius: 4px; font-weight: 700;">1 Kec</span>
+                      <span style="font-size: 14px; font-weight: 700; color: #0f172a;">Paket 14 Grafik (G01_1 s.d. G07_2)</span>
+                      <span style="font-size: 9.5px; background: #e0e7ff; color: #4338ca; padding: 2px 6px; border-radius: 4px; font-weight: 700;">1 Kec • 14 PNG</span>
                     </div>
                     <p style="font-size: 12px; color: #64748b; margin-bottom: 14px; line-height: 1.5;">
-                      Unduh seluruh 14 gambar grafik perbandingan desa (Bab 1 s.d. 7) untuk kecamatan aktif dalam format berkas gambar PNG resolusi tinggi tajam.
+                      Unduh 14 gambar grafik perbandingan desa (Bab 1 s.d 7) berformat ringkas <strong>G01_1.png s.d G07_2.png</strong> + lampiran daftar kode variabel (Excel & TXT).
                     </p>
                   </div>
                   <button class="btn btn-primary" id="btn-export-charts-single" onclick="exportActiveDistrictChartsZIP()" style="width: 100%; justify-content: center; font-size: 12.5px; font-weight: 700; background: linear-gradient(135deg, #2563eb, #3b82f6); border: none; color: white; padding: 10px 16px; border-radius: 8px; box-shadow: 0 2px 8px rgba(37,99,235,0.25);">
-                    📦 Unduh 14 Grafik Kecamatan Aktif (.ZIP)
+                    📦 Unduh 14 Grafik (.ZIP)
                   </button>
                 </div>
 
@@ -1544,15 +1548,31 @@
                 <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 18px; display: flex; flex-direction: column; justify-content: space-between;">
                   <div>
                     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                      <span style="font-size: 14px; font-weight: 700; color: #14532d;">Kompilasi Seluruh 490 Grafik (35 Kecamatan)</span>
+                      <span style="font-size: 14px; font-weight: 700; color: #14532d;">Kompilasi 490 Grafik (35 Kecamatan)</span>
                       <span style="font-size: 9.5px; background: #dcfce7; color: #15803d; padding: 2px 6px; border-radius: 4px; font-weight: 700;">Massal 35 Kec</span>
                     </div>
                     <p style="font-size: 12px; color: #166534; margin-bottom: 14px; line-height: 1.5;">
-                      Ekspor seluruh 490 file gambar PNG grafik perbandingan desa untuk 35 kecamatan (14 grafik × 35 kecamatan) terorganisir rapi per folder kecamatan dalam arsip ZIP.
+                      Ekspor seluruh 490 berkas gambar PNG grafik (G01_1 s.d G07_2) untuk 35 kecamatan tersusun rapi per folder + Master Excel Manifest 490 grafik dalam arsip ZIP.
                     </p>
                   </div>
                   <button class="btn btn-primary" id="btn-export-charts-massal" onclick="exportAll35DistrictsChartsZIP()" style="width: 100%; justify-content: center; font-size: 12.5px; font-weight: 700; background: linear-gradient(135deg, #059669, #10b981); border: none; color: white; padding: 10px 16px; border-radius: 8px; box-shadow: 0 2px 8px rgba(16,185,129,0.25);">
-                    📦 Unduh Paket 490 Grafik (35 Kec ZIP)
+                    📦 Unduh Paket 490 Grafik (ZIP)
+                  </button>
+                </div>
+
+                <!-- 2.3 Manifest Daftar Kode & Variabel -->
+                <div style="background: #fffbeb; border: 1.5px solid #fde68a; border-radius: 10px; padding: 18px; display: flex; flex-direction: column; justify-content: space-between;">
+                  <div>
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                      <span style="font-size: 14px; font-weight: 700; color: #92400e;">Daftar Kode & Variabel Grafik</span>
+                      <span style="font-size: 9.5px; background: #fef3c7; color: #b45309; padding: 2px 6px; border-radius: 4px; font-weight: 700;">Excel & TXT</span>
+                    </div>
+                    <p style="font-size: 12px; color: #78350f; margin-bottom: 14px; line-height: 1.5;">
+                      Unduh tabel pemetaan lengkap kode gambar (<strong>G01_1 s.d. G07_2</strong>) beserta nama Bab, variabel/indikator data, tipe grafik, dan satuan dalam format Excel (.xlsx) & Teks (.txt).
+                    </p>
+                  </div>
+                  <button class="btn btn-primary" id="btn-download-chart-manifest" onclick="downloadChartManifest()" style="width: 100%; justify-content: center; font-size: 12.5px; font-weight: 700; background: linear-gradient(135deg, #d97706, #f59e0b); border: none; color: white; padding: 10px 16px; border-radius: 8px; box-shadow: 0 2px 8px rgba(217,119,6,0.25);">
+                    📑 Unduh Daftar Kode (.xlsx & .txt)
                   </button>
                 </div>
               </div>
@@ -1627,6 +1647,34 @@
                   </div>
                   <button class="btn btn-primary" id="btn-export-interp-massal-zip" onclick="exportAll35InterpretasiZIP()" style="width: 100%; justify-content: center; font-size: 12px; font-weight: 700; background: linear-gradient(135deg, #7c3aed, #8b5cf6); border: none; color: white; padding: 8px 12px; border-radius: 8px; box-shadow: 0 2px 8px rgba(124, 58, 237, 0.25);">
                     📦 Unduh ZIP 35 Naskah (.zip)
+                  </button>
+                </div>
+
+                <!-- 3.5 Single Excel Bilingual Bab 1 - 7 -->
+                <div style="background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 10px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between;">
+                  <div>
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                      <span style="font-size: 13.5px; font-weight: 700; color: #166534;">Excel Bilingual (.xlsx)</span>
+                      <span style="font-size: 9.5px; background: #dcfce7; color: #15803d; padding: 2px 6px; border-radius: 4px; font-weight: 700;">1 Kec • Bab 1-7</span>
+                    </div>
+                    <p style="font-size: 11.5px; color: #166534; margin-bottom: 14px; line-height: 1.4;">Unduh seluruh narasi Bab 1 s.d. 7 dalam kolom <strong>Bahasa Indonesia & English</strong> untuk kecamatan aktif.</p>
+                  </div>
+                  <button class="btn btn-primary" id="btn-export-interp-single-excel" onclick="exportInterpretasiExcel()" style="width: 100%; justify-content: center; font-size: 12px; font-weight: 700; background: linear-gradient(135deg, #059669, #10b981); border: none; color: white; padding: 8px 12px; border-radius: 8px; box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);">
+                    📗 Unduh Excel 1 Kec (.xlsx)
+                  </button>
+                </div>
+
+                <!-- 3.6 Massal 35 Kecamatan Excel Bilingual Bab 1 - 7 -->
+                <div style="background: #eff6ff; border: 1.5px solid #93c5fd; border-radius: 10px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between;">
+                  <div>
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                      <span style="font-size: 13.5px; font-weight: 700; color: #1e40af;">Kompilasi Excel 35 Kec</span>
+                      <span style="font-size: 9.5px; background: #dbeafe; color: #1d4ed8; padding: 2px 6px; border-radius: 4px; font-weight: 700;">Massal • 7 Sheet Bab</span>
+                    </div>
+                    <p style="font-size: 11.5px; color: #1e40af; margin-bottom: 14px; line-height: 1.4;">Kompilasi narasi <strong>Bab 1 s.d. 7 (Indo & Inggris)</strong> untuk seluruh 35 kecamatan dalam 7 sheet Bab + Master Kompilasi.</p>
+                  </div>
+                  <button class="btn btn-primary" id="btn-export-interp-massal-excel" onclick="exportAll35InterpretasiExcel()" style="width: 100%; justify-content: center; font-size: 12px; font-weight: 700; background: linear-gradient(135deg, #2563eb, #1d4ed8); border: none; color: white; padding: 8px 12px; border-radius: 8px; box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);">
+                    📗 Unduh Excel 35 Kec (.xlsx)
                   </button>
                 </div>
               </div>
@@ -1814,7 +1862,7 @@
 
                     <!-- Dynamic Content Area -->
                     <div class="info-content-area" id="info-content-area">
-                      <!-- Rendered dynamically by app.js based on selected Bab -->
+                      <!-- Rendered dynamically by app_v1.js?v=20260917_v6_bilingual_enlarged_all based on selected Bab -->
                     </div>
 
                     <!-- Fixed Infographic Footer -->
@@ -2649,6 +2697,7 @@
   <div id="excel-generate-success-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.75); z-index: 99999; align-items: center; justify-content: center; backdrop-filter: blur(6px);">
     <div style="background: #ffffff; border-radius: 20px; width: 520px; max-width: 92%; max-height: 90vh; overflow-y: auto; box-shadow: 0 25px 60px rgba(0,0,0,0.3); font-family: 'Outfit', sans-serif; text-align: center;">
       <div style="background: linear-gradient(135deg, #059669, #10b981); padding: 24px 24px 20px; color: white; position: relative;">
+        <button type="button" onclick="closeExcelGenerateSuccessModal()" style="position: absolute; top: 12px; right: 14px; background: rgba(0,0,0,0.2); border: none; color: white; width: 30px; height: 30px; border-radius: 50%; font-size: 15px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;" title="Tutup Modal" onmouseover="this.style.background='rgba(0,0,0,0.4)'" onmouseout="this.style.background='rgba(0,0,0,0.2)'">✕</button>
         <div style="width: 52px; height: 52px; border-radius: 50%; background: rgba(255, 255, 255, 0.2); border: 2px solid #ffffff; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; color: #ffffff;">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
         </div>
@@ -2714,7 +2763,7 @@
     </select>
   </div>
 
-  <script src="app_v1.js"></script>
+  <script src="app_v1.js?v=20260917_v6_bilingual_enlarged_all"></script>
 
   <!-- MODAL: PEMILIHAN VARIABEL KARTU INFOGRAFIS -->
   <div id="infografis-var-picker-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.75); z-index: 99999; align-items: center; justify-content: center; backdrop-filter: blur(6px);">
