@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BPS Infografis KCDA - 7 Bab Otomatis</title>
-  <link rel="stylesheet" href="style_v1.css?v=20260917_v6_bilingual_enlarged_all">
+  <link rel="stylesheet" href="style_v1.css?v=20260919_v10_revisions_all">
   
   <!-- Pustaka Eksternal via CDN -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -1886,7 +1886,7 @@
                             <path d="M12,2 L14.8,9.2 L22,12 L14.8,14.8 L12,22 L9.2,14.8 L2,12 L9.2,9.2 Z" />
                           </svg>
                         </span>
-                        <span class="fixed-info-footer-text" contenteditable="true" id="fixed-footer-text" data-label-key="lbl_sumber_potensi_desa">Sumber/Source: Survei Potensi Desa 2024/Village Potential Survey 2024</span>
+                        <span class="fixed-info-footer-text" contenteditable="true" id="fixed-footer-text" data-label-key="lbl_sumber_potensi_desa">Sumber: Survei Potensi Desa 2024 / <i>Source: Village Potential Survey 2024</i></span>
                         <span class="footer-decor-icon">
                           <svg viewBox="0 0 24 24" width="16" height="16" fill="var(--accent-color, #fbbf24)" style="filter: drop-shadow(0 0 3px var(--accent-color, #fbbf24));">
                             <path d="M12,2 L14.8,9.2 L22,12 L14.8,14.8 L12,22 L9.2,14.8 L2,12 L9.2,9.2 Z" />
@@ -1926,6 +1926,11 @@
                 <div class="form-group" style="margin-bottom: 10px;">
                   <label for="set-year">Tahun Publikasi</label>
                   <input type="text" id="set-year">
+                </div>
+
+                <div class="form-group" style="margin-bottom: 10px;">
+                  <label for="set-source">Sumber Data (Footer)</label>
+                  <input type="text" id="set-source" style="font-size: 11px;">
                 </div>
 
                 <div class="form-group" style="margin-bottom: 10px;">
@@ -2072,12 +2077,12 @@
                   </div>
                   <div style="display: flex; gap: 8px; align-items: center; margin-top: 8px;">
                     <div style="flex: 1;">
-                      <span style="font-size: 9px; color: var(--text-muted); display: block; margin-bottom: 2px;">Satuan (km, m)</span>
-                      <input type="color" id="set-color-text-unit" value="#fde047" style="width: 100%; height: 30px; padding: 2px;">
+                      <span style="font-size: 9px; color: var(--text-muted); display: block; margin-bottom: 2px; font-weight: 700;">Warna Angka / Nilai</span>
+                      <input type="color" id="set-color-text-unit" value="#fde047" style="width: 100%; height: 30px; padding: 2px;" title="Ubah warna angka/nilai metrik (Kuning/Putih/Custom)">
                     </div>
                     <div style="flex: 1;">
-                      <span style="font-size: 9px; color: var(--text-muted); display: block; margin-bottom: 2px;">Nama Desa</span>
-                      <input type="color" id="set-color-text-village" value="#f35c7e" style="width: 100%; height: 30px; padding: 2px;">
+                      <span style="font-size: 9px; color: var(--text-muted); display: block; margin-bottom: 2px; font-weight: 700;">Warna Aksen / Hijau</span>
+                      <input type="color" id="set-color-text-village" value="#4ade80" style="width: 100%; height: 30px; padding: 2px;" title="Ubah warna aksen/nilai sekunder (Hijau/Cyan/Custom)">
                     </div>
                     <div style="flex: 1;">
                       <span style="font-size: 9px; color: var(--text-muted); display: block; margin-bottom: 2px;">Teks Footer</span>
@@ -2763,7 +2768,7 @@
     </select>
   </div>
 
-  <script src="app_v1.js?v=20260917_v6_bilingual_enlarged_all"></script>
+  <script src="app_v1.js?v=20260919_v10_revisions_all"></script>
 
   <!-- MODAL: PEMILIHAN VARIABEL KARTU INFOGRAFIS -->
   <div id="infografis-var-picker-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.75); z-index: 99999; align-items: center; justify-content: center; backdrop-filter: blur(6px);">

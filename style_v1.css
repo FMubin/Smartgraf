@@ -4431,3 +4431,52 @@ header.app-header h1 span {
 
 
 
+
+
+/* Dynamic Styles for Bilingual Subtitles, Badges, and English Elements */
+.card-title-stack .eng,
+.info-card-glass .eng,
+.pencil-chart-row .eng,
+.pencil-chart-row span[style*="font-style: italic"],
+.malnutrition-card small,
+.badge small,
+.unit small,
+.unit-eng,
+.lbl-ind small,
+.thermometer-label-card .eng,
+.chart-bar-label-stack .eng,
+.section-capsule-title .eng,
+.coop-label-stack .eng-sub,
+.info-district-banner .labels .eng,
+.info-sub-title-modern,
+#info-sub-title,
+.eng {
+  font-style: italic !important;
+  color: var(--text-secondary, rgba(255, 255, 255, 0.85)) !important;
+  opacity: 0.95 !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7) !important;
+}
+
+.card-title-stack .eng {
+  font-size: 11px !important;
+  font-weight: 600 !important;
+}
+
+/* Footer & Footer English Italic Dynamic Color */
+.fixed-info-footer-text,
+#fixed-footer-text {
+  color: var(--text-footer, var(--text-primary, #ffffff)) !important;
+}
+
+.fixed-info-footer-text i,
+#fixed-footer-text i {
+  font-style: italic !important;
+  color: var(--text-footer, var(--text-secondary, #ffffff)) !important;
+  opacity: 0.95 !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7) !important;
+}
+
+.badge {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
